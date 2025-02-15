@@ -27,11 +27,11 @@ This project will venture into the world of full-stack development by integratin
 
 
 ## Goals:
-* Create a **user-friendly** interface for searching artists.
-* Fetch and process **setlist data** from the Setlist.fm API into insightful statistics.
-* Generate an **average setlist** based on recent concerts.
-* Display **setlist statistics** (rare songs, variations, frequent encores etc).
-* Allow users to **save searches** in a PostgreSQL database.
+* Create a user-friendly interface for searching artists.
+* Fetch and process setlist data from the Setlist.fm API into insightful statistics.
+* Generate an average setlist based on recent concerts.
+* Display setlist statistics (rare songs, variations, guest performers,frequent encores etc).
+* Allow users to save searches in a PostgreSQL database.
 
 ## Current Progress:
 * Set up technology stack on multiple devices for efficient development
