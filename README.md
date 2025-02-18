@@ -36,7 +36,7 @@ This project will venture into the world of full-stack development by integratin
 ## Current Progress:
 * Set up technology stack on multiple devices for efficient development
 * Deployed and tested React frontend and Spring Boot backend
-* Verified API connectivity with Postman
+* Verified front-end to back-end connectivity with Postman
 
 ## Future Timeline:
 ### Milestone 2-
