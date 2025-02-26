@@ -1,16 +1,32 @@
 package com.BP.setlistaggregator.controllers;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.CrossOrigin;
-
-@CrossOrigin(origins = "http://localhost:3000") // Allow React frontend to access
+import com.BP.setlistaggregator.model.Setlist;
+import com.BP.setlistaggregator.repositories.SetlistRepository;
+import com.BP.setlistaggregator.service.SetlistService;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+//class to handle api requests from frontend
+//allow React frontend to access
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api")
+//base URL for setlist objects
+@RequestMapping("/api/setlists")
 public class SetlistController {
-    @GetMapping("/test")
-    public String testEndpoint() {
-        return "Backend is working!";
+    private final SetlistService setlistService;
+
+    public SetlistController(SetlistService setlistService) {
+        this.setlistService = setlistService;
+    }
+//GET endpoint to fetch all setlists from user defined artist
+    @GetMapping
+    public List<Setlist> getAllArtistSetlists(@RequestParam String artist) {
+        //get all setlists from database
+        return setlistService.getSetlistsForArtist(artist);
+    }
+    //Get stats for artists sets
+    @GetMapping("/stats")
+    public String getArtistStats(@RequestParam String artist) {
+        //save setlist to database
+        return setlistService.calculateArtistStats(artist);
     }
 }
