@@ -44,3 +44,5 @@ This project will venture into the world of full-stack development by integratin
 * Create bare-bones user interface and search forms
 * Implement initial API-to-database functionality
 
+##Videos:
+###Milestone 1- https://mediaspace.wisconsin.edu/media/t/1_ytsigy5d
