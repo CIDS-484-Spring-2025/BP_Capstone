@@ -39,7 +39,7 @@ public class SetlistService {
                         .path("/search/setlists")
                         .queryParam("artistName", artist)
                         .build())
-                .header("x-api-key", System.getenv("SFM_API_KEY")
+                .header("x-api-key", "rnD1oaOWGBTK0O2sCnxkQS0pwpFVacKavYXK")
                 .retrieve()
                 //convert JSON response to setlist objects
                 .bodyToFlux(Setlist.class)
