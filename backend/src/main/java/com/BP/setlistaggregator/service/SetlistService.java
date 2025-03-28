@@ -15,9 +15,11 @@ public class SetlistService {
     private final SetlistRepository setlistRepository;
     private final WebClient webClient;
 
-    public SetlistService(SetlistRepository setlistRepository, WebClient webClient) {
+    public SetlistService(SetlistRepository setlistRepository, WebClient.Builder webClientBuilder) {
         this.setlistRepository = setlistRepository;
-        this.webClient = webClientBuilder.baseUrl("https://api.setlist.fm/rest/1.0").build();
+        this.webClient = webClientBuilder
+                .baseUrl("https://api.setlist.fm/rest/1.0")
+                .build();
     }
 
     //method to retrieve setlists from db, if not there from setlistFM
@@ -39,7 +41,7 @@ public class SetlistService {
                         .path("/search/setlists")
                         .queryParam("artistName", artist)
                         .build())
-                .header("x-api-key", System.getenv("SFM_API_KEY")
+                .header("x-api-key", System.getenv("SFM_API_KEY"))
                 .retrieve()
                 //convert JSON response to setlist objects
                 .bodyToFlux(Setlist.class)

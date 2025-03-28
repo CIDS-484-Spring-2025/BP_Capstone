@@ -1,7 +1,9 @@
 package com.BP.setlistaggregator.model;
 
 import jakarta.persistence.*;
-import java.util.list;
+import java.util.List;
+import com.BP.setlistaggregator.model.Setlist;
+
 
 @Entity
 public class Artist {
@@ -10,14 +12,14 @@ public class Artist {
     //auto generate IDs for artists
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private string name;
+    private String name;
     //musicbrainz id needed for matching with setlist.fm api
     private String mbid;
 
     //one artist can have many setlists
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
     //list to hold artists setlists
-    private list<Setlist> setlists;
+    private List<Setlist> setlists;
 
     //getters setters and constructors
 
@@ -41,7 +43,7 @@ public class Artist {
         return mbid;
     }
 
-    public list<Setlist> getSetlists() {
+    public List<Setlist> getSetlists() {
         return setlists;
     }
     //setters

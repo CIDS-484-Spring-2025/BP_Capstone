@@ -1,6 +1,8 @@
 package com.BP.setlistaggregator.model;
 
 import jakarta.persistence.*;
+import java.util.List;
+import com.BP.setlistaggregator.model.Setlist;
 
 @Entity
 public class Song {

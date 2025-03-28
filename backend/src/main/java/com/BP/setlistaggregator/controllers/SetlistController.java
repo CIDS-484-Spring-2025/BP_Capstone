@@ -21,12 +21,13 @@ public class SetlistController {
     @GetMapping
     public List<Setlist> getAllArtistSetlists(@RequestParam String artist) {
         //get all setlists from database
-        return setlistService.getSetlistsForArtist(artist);
+        return setlistService.getAllArtistSetlists(artist);
     }
+    /* implement in future
     //Get stats for artists sets
     @GetMapping("/stats")
     public String getArtistStats(@RequestParam String artist) {
         //save setlist to database
         return setlistService.calculateArtistStats(artist);
-    }
+    } */
 }
