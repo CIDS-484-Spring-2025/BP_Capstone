@@ -1,4 +1,4 @@
-package com.yourname.setlistaggregator.config;
+package com.BP.setlistaggregator.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
