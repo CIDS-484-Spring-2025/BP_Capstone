@@ -12,4 +12,6 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     //method to find an artist given their unique Musicbrainz ID (mbid)
     Optional<Artist> findByMbid(String mbid);
+    Optional<Artist> findByNameIgnoreCase(String name);
+
 }
