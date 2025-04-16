@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
+//represents a single concert in the database
 @Entity
 public class Setlist {
     @Id
@@ -16,10 +17,11 @@ public class Setlist {
     private String city;
     private String country;
 
-    //MAny setlists assigned to one artist
+    //Many setlists can be assigned to one artist
     @ManyToOne
     //foreign key to link artist
     @JoinColumn(name = "artist_id")
+    //maps foreign key column to artist table
     private Artist artist;
 
     //one setlist can have many songs
@@ -38,7 +40,7 @@ public class Setlist {
         this.country = country;
         this.artist = artist;
     }
-    //getters and setters
+    //getters and setters, allow service layer and controller to modify setlist objects
 
     public LocalDate getDate() {
         return date;

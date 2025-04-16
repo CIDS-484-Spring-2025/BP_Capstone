@@ -2,10 +2,9 @@ package com.BP.setlistaggregator.dto;
 import java.util.List;
 
 //class to match the API response structure from Setlist.fm
-//JSON has field called "Setlist" which holds list of setlists
+//this wrapper wraps the root API response to allow extraction of ApiSetlist entries
 public class SetlistResponseWrapper {
-
-    //list of individual setlists returned by API
+    //Top level JSON object from Setlist.fm has field called "setlist" which holds list of concerts
     private List<ApiSetlist> setlist;
 
     //getter for list of setlists to be used in other classes
