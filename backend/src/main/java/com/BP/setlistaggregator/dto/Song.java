@@ -1,8 +1,8 @@
 package com.BP.setlistaggregator.dto;
 
-//represents single song from setlist
+//represents single song from setlist in raw API form
 public class Song {
-
+    //song title
     private String name;
 
     public String getName() {

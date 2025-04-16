@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import java.util.List;
 import com.BP.setlistaggregator.model.Setlist;
 
-
+//marks class as JPA entity, enabling spring boot to map it to a table in PostgreSQL database
+//creates "artist" class in database
 @Entity
+//each Artist instance will be 1 row in artist table
 public class Artist {
     //primary key
     @Id
-    //auto generate IDs for artists
+    //auto generate IDs for artists (separate from mbid used by Setlist.fm)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;

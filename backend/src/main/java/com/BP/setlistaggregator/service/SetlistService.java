@@ -20,23 +20,42 @@ import java.util.*;
 
 
 
-//annotates as class to perform business logic i.e. calculations on stats
+//class to perform business logic i.e. calculations on stats
+//source of all the app's backend logic
 //defines methods to perform calculations
+//acts as bridge between frontend (controllers) and backend (repositories and API)
+/*
+Current functions/process:
+Checks if artist searched by user already is in database
+If not, it calls Setlist.FM API and processes the response
+Transforms the API data/DTOs into database entities
+Calculates statistics to present to user, currently includes methods to return:
+-Top Encore Songs
+-Rarest songs
+Controls data flow between the app's controllers and repositories
+*/
+//Declare as Service so spring recognizes as service bean, allowing it to be automatically created and injected into other classes like controllers
 @Service
 public class SetlistService {
+    //declare tools needed for Service class to do its job
+    //needed to save and load setlists from database (CRUD)
     private final SetlistRepository setlistRepository;
+    //needed to find, save artist
     private final ArtistRepository artistRepository;
+    //talks to Setlist.FM's REST API
     private final WebClient webClient;
 
+    //Constructor injection of dependencies, Spring will automatically inject these dependendies when app starts
     public SetlistService(SetlistRepository setlistRepository, ArtistRepository artistRepository, WebClient.Builder webClientBuilder) {
         this.setlistRepository = setlistRepository;
         this.artistRepository = artistRepository;
+        //Allows us to build an HTTP client with a base URL of Setlist.FM's API
         this.webClient = webClientBuilder
                 .baseUrl("https://api.setlist.fm/rest/1.0")
                 .build();
     }
 
-    //method to retrieve setlists from db, if not there from setlistFM
+    //first step upon user search- method to retrieve setlists from db, if not there from setlistFM
     public List<Setlist> getAllArtistSetlists(String artist) {
         //query database to see if artist already there
         List<Setlist> setlists = setlistRepository.findByArtistName(artist);
@@ -48,9 +67,9 @@ public class SetlistService {
         }
             return setlists;
     }
-    //method to fetch artist setlists from setlistfm
+    //method to fetch artist setlists from setlistfm and download them
     private List<Setlist> fetchFromSetlistFm(String artistName) {
-        //send request to Setlist.fm API
+        //send GET request to Setlist.fm API at https://api.setlist.fm/rest/1.0/search/setlists?artistName= "user artist"
         SetlistResponseWrapper response = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search/setlists")
@@ -62,6 +81,8 @@ public class SetlistService {
                 .header("x-api-key", System.getenv("SFM_API_KEY"))
                 .retrieve()
                 //Map outer API wrapper to its Java class
+                //This tells Spring to turn the JSON response into DTOs
+                //JSON is deserialized in SetlistResponseWrapper into list of ApiSetlist objects
                 .bodyToMono(SetlistResponseWrapper.class)
                 //block request until full data received
                 .block();
