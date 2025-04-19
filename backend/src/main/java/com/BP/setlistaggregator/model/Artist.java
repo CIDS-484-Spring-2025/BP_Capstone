@@ -20,6 +20,8 @@ public class Artist {
 
     //one artist can have many setlists
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
+    //prevent recursive serialization
+    @JsonIgnore
     //list to hold artists setlists
     private List<Setlist> setlists;
 
