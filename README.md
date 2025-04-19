@@ -42,7 +42,7 @@ This project will venture into the world of full-stack development by integratin
 * Database set up with table structures defined, implemented.
 * Back-end logic mostly complete with database models, controller classes, repositories. Mostly need to expand Service class functionality to include logic for more stats to display on front end.
 ## Future Timeline:
-### Milestone 3-
+### -Final Goals
 * Improve UI, add features to allow users to sign up for account to save their stats from searches
 * Implement more functions to process data from API into additional statistics.
 * With back end logic mostly solidified, focus is on front-end user experience and features.
