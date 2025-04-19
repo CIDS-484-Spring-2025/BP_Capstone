@@ -1,62 +1,60 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import './SearchBar.css';
 
 function SearchBar() {
-  const [artist, setArtist] = useState("");
+  //store artist input from user
+  const [artistName, setArtistName] = useState('');
+  //store results from backend
+  const [encores, setEncores] = useState([]);
+  const [rarest, setRarest] = useState([]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    //call backend endpoint
-    fetch(`http://localhost:8080/api/setlists?artist=${artist}`)
-      .then((res) => res.json())
-      .then((data) => console.log("Fetched setlists:", data))
-      .catch((err) => console.error("Error fetching setlists:", err));
+  //update input as user types
+  const handleInputChange = (e) => {
+    setArtistName(e.target.value);
+  };
+
+  //trigger on search click
+  const handleSearch = async () => {
+    try {
+      //fetch top encore songs from backend
+      const encoreRes = await fetch(`http://localhost:8080/api/setlists/encores?artist=${artistName}`);
+      const encoreData = await encoreRes.json();
+      setEncores(encoreData);
+
+      //fetch rarest songs from backend
+      const rareRes = await fetch(`http://localhost:8080/api/setlists/rarest?artist=${artistName}`);
+      const rareData = await rareRes.json();
+      setRarest(rareData);
+    } catch (err) {
+      console.error("Error fetching setlist data:", err);
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        display: "flex",
-        gap: "1rem",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-        padding: "1rem 1.5rem",
-        borderRadius: "10px",
-        boxShadow: "0 0 15px rgba(255, 255, 255, 0.2)",
-      }}
-    >
+    <div className="search-bar-container">
       <input
         type="text"
-        placeholder="Search artist..."
-        value={artist}
-        onChange={(e) => setArtist(e.target.value)}
-        style={{
-          padding: "0.6rem 1rem",
-          fontSize: "1rem",
-          borderRadius: "5px",
-          border: "1px solid #888",
-          backgroundColor: "#222",
-          color: "#eee",
-          width: "250px",
-        }}
+        placeholder="Search for an artist..."
+        value={artistName}
+        onChange={handleInputChange}
+        className="search-input"
       />
-      <button
-        type="submit"
-        style={{
-          padding: "0.6rem 1.2rem",
-          fontSize: "1rem",
-          borderRadius: "5px",
-          backgroundColor: "#C0C0C0", // silver
-          border: "none",
-          color: "#000",
-          fontWeight: "bold",
-          cursor: "pointer",
-          boxShadow: "0 0 8px rgba(192,192,192,0.5)",
-        }}
-      >
+      <button onClick={handleSearch} className="search-button">
         Search
       </button>
-    </form>
+
+      <div className="results-container">
+        <h3>Top Encore Songs</h3>
+        <ul>
+          {encores.map((song, idx) => <li key={idx}>{song}</li>)}
+        </ul>
+
+        <h3>Rarest Songs</h3>
+        <ul>
+          {rarest.map((song, idx) => <li key={idx}>{song}</li>)}
+        </ul>
+      </div>
+    </div>
   );
 }
 
