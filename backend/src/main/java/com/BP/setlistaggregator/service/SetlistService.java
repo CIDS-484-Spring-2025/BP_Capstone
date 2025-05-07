@@ -63,7 +63,6 @@ public class SetlistService {
         if (setlists.isEmpty()) {
             //not in database, so fetch from setlistfm
             setlists = fetchFromSetlistFm(artist);
-            setlistRepository.saveAll(setlists);
         }
             return setlists;
     }
@@ -87,31 +86,58 @@ public class SetlistService {
                 //block request until full data received
                 .block();
 
-        //return empty list if no data
-        if (response == null || response.getSetlist() == null) {
-            return new ArrayList<>();
-        }
-        //check if artist exists in local DB already
-        Artist artist = artistRepository.findByNameIgnoreCase(artistName).orElse(null);
+            //return empty list if no data in response or if setlist array is null
+            if (response == null || response.getSetlist() == null) {
+                return new ArrayList<>();
+            }
+            //print raw json from API for debugging empty setlist issue
+            System.out.println("API returned setlists: " + response.getSetlist().size());
+            for (ApiSetlist apiSetlist : response.getSetlist()) {
+                System.out.println("Setlist on " + apiSetlist.getEventDate());
+                if (apiSetlist.getSets() == null || apiSetlist.getSets().getSet() == null) {
+                    System.out.println(" → No sets for this concert.");
+                } else {
+                    for (SetSection section : apiSetlist.getSets().getSet()) {
+                        if (section.getSong() == null || section.getSong().isEmpty()) {
+                            System.out.println(" → Set section has no songs.");
+                        } else {
+                            System.out.println(" → Songs: " + section.getSong().size());
+                        }
+                    }
+                }
+            }
+            //check if artist exists in local DB already
+            Artist artist = artistRepository.findByNameIgnoreCase(artistName).orElse(null);
 
-        //if not- create, save new artist
-        if (artist == null) {
-            artist = new Artist();
-            artist.setName(artistName);
-            artist = artistRepository.save(artist);
-        }
-        //convert all API setlists to DB setlists using mapper method
-        List<Setlist> dbSetlists = new ArrayList<>();
-        for (ApiSetlist apiSetlist : response.getSetlist()) {
-            Setlist dbSetlist = mapApiSetlistToEntity(apiSetlist, artist);
-            dbSetlists.add(dbSetlist);
-        }
-        //save all setlists and cascade save all songs
-        setlistRepository.saveAll(dbSetlists);
+            //if not- create, save new artist
+            if (artist == null) {
+                artist = new Artist();
+                artist.setName(artistName);
+                artist = artistRepository.save(artist);
+            }
+            //convert all API setlists to DB setlists using mapper method
+            List<Setlist> dbSetlists = new ArrayList<>();
+            for (ApiSetlist apiSetlist : response.getSetlist()) {
+                Setlist dbSetlist = mapApiSetlistToEntity(apiSetlist, artist);
+                //skip nulls when mapping setlists to db
+                if (dbSetlist != null) {
+                    dbSetlists.add(dbSetlist);
+                }
+            }
+            //save all setlists and cascade save all songs
+            setlistRepository.saveAll(dbSetlists);
 
-        //return saved DB setlists
-        return dbSetlists;
-    }
+            //confirm songs are saved to the db
+            System.out.println("saved " + dbSetlists.size() + " setlists and their songs to the database.");
+
+            //confirm setlists are being saved
+            for (Setlist s : dbSetlists) {
+                System.out.println("Saved Setlist with " + s.getSongs().size() + " songs on " + s.getDate());
+            }
+
+            //return saved DB setlists
+            return dbSetlists;
+        }
     //method to calculate an artists top 5 encore songs (final song)
     public List<String> getTopEncoreSongs(String artist) {
 
@@ -145,9 +171,16 @@ public class SetlistService {
                 String title = encore.getTitle();
                 int count = encoreCounts.getOrDefault(title, 0);
                 encoreCounts.put(title, count + 1);
+
+                //logging to verify mapping works and songs are saved
+                //if doesn't print, extractSongs call is pulling from setlists with empty song lists- meaning mapping doesn't work or songs not being sdaved
+                System.out.println("Encore song found, name:  " + title + " at position " + encore.getPosition());
+            }
+            else {
+                System.out.println("No encore song found in setlist with " + songs.size() + " songs");
             }
         }
-       //call helper method to get 5 most common encore songs sorted
+        //call helper method to get 5 most common encore songs sorted
         return getTopKeys(encoreCounts, 5, false);
     }
 
@@ -230,7 +263,14 @@ public class SetlistService {
         setlist.setArtist(artist);
 
         //parse event date string from API to localdate
-        LocalDate parsedDate = LocalDate.parse(apiSetlist.getEventDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        LocalDate parsedDate;
+        try {
+            parsedDate = LocalDate.parse(apiSetlist.getEventDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        } catch (Exception e) {
+            System.out.println("Date parsing failed for: " + apiSetlist.getEventDate());
+            //fallback or skip
+            parsedDate = LocalDate.now();
+        }
         setlist.setDate(parsedDate);
 
         //implement later
@@ -245,6 +285,7 @@ public class SetlistService {
         if (apiSetlist.getSets() != null && apiSetlist.getSets().getSet() != null) {
             for (SetSection section : apiSetlist.getSets().getSet()) {
                 if (section.getSong() != null) {
+                    int positionCtr = 1;
                     //convert each API song to DB song object and add it to list
                     for (com.BP.setlistaggregator.dto.Song apiSong : section.getSong()) {
                         //create new Song entity
@@ -253,12 +294,23 @@ public class SetlistService {
                         //link song to this setlist
                         dbSong.setSetlist(setlist);
                         dbSongs.add(dbSong);
+
+                        //debug log to confirm songs are being parsed and position being assigned correctly
+                        System.out.println("Mapped song: " + apiSong.getName() + " at position " + positionCtr);
+                        positionCtr++;
                     }
                 }
             }
         }
+        //new method to check if setlist is empty and avoid saving it to db
+        if (dbSongs.isEmpty()) {
+            System.out.println("Skipping empty setlist for artist " + artist.getName() + " on " + apiSetlist.getEventDate());
+            return null;
+        }
         //add all songs to the setlist
         setlist.setSongs(dbSongs);
+        //log to confirm what data is being saved
+        System.out.println("Mapped " + dbSongs.size() + " songs for setlist on " + apiSetlist.getEventDate());
 
         return setlist;
     }

@@ -13,7 +13,6 @@ repositories are interfaces powered by Spring Data JPA that handles reading and 
 Spring auto-generates SQL code behind the scenes when you extend JPARepository
 Also gives methods including findAll(), findById, save(entity), others
 */
- */
 public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     //method to find an artist given their unique Musicbrainz ID (mbid)
