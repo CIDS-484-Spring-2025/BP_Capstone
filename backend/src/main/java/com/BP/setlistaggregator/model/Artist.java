@@ -3,6 +3,7 @@ package com.BP.setlistaggregator.model;
 import jakarta.persistence.*;
 import java.util.List;
 import com.BP.setlistaggregator.model.Setlist;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 //marks class as JPA entity, enabling spring boot to map it to a table in PostgreSQL database
 //creates "artist" class in database

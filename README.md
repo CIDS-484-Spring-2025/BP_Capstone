@@ -41,6 +41,8 @@ This project will venture into the world of full-stack development by integratin
 * Implemented functions for fetching and processing data from Setlist.FM API into an artist's rarest songs and most frequent encores.
 * Database set up with table structures defined, implemented.
 * Back-end logic mostly complete with database models, controller classes, repositories. Mostly need to expand Service class functionality to include logic for more stats to display on front end.
+* Addressed issue of empty setlists being returned and saved to database.
+* Added option to let users choose to search stats from artist's last 20 concerts or last 100. (Unfortunately all time stats aren't feasible due to API rate limits)
 ## Future Timeline:
 ### -Final Goals
 * Improve UI, add features to allow users to sign up for account to save their stats from searches
