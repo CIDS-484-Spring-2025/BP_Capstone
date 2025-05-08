@@ -18,6 +18,7 @@ public class SetlistController {
     //constructor injection of setlist service as dependency
     //Spring automatically passes instance of SetlistService when controller is created
     public SetlistController(SetlistService setlistService) {
+
         this.setlistService = setlistService;
     }
 
@@ -25,23 +26,74 @@ public class SetlistController {
     //maps to GET /api/setlists?artist=Radiohead
     //returns list of setlists, each containing songs, artist etc in JSON format
     @GetMapping
-    public List<Setlist> getAllArtistSetlists(@RequestParam String artist) {
+    public List<Setlist> getAllArtistSetlists(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
+    {
+        //have to use String in parameter to allow for user to select all, so conversion is in case number entered
+        int maxSetlists;
+
+        if (setlistRange.equalsIgnoreCase("all")) {
+            //-1 means fetch all within fetch method, fetches all pages of artists setlists
+            maxSetlists = -1;
+        }
+        else {
+            try {
+                maxSetlists = Integer.parseInt(setlistRange);
+            }
+            catch (NumberFormatException e) {
+                //fallback to 20 default if invalid input
+                maxSetlists = 50;
+            }
+        }
         //get all setlists from database using service layer method
-        return setlistService.getAllArtistSetlists(artist);
+        return setlistService.getAllArtistSetlists(artist, maxSetlists);
     }
     //Get endpoint to return 5 most common encore songs for inputted artist
     //maps to GET /api/setlists/encores?artist=Tool
     @GetMapping("/encores")
-    public List<String> getTopEncores(@RequestParam String artist) {
+    public List<String> getTopEncores(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
+    {
+        int maxSetlists;
+
+        if (setlistRange.equalsIgnoreCase("all")) {
+            //-1 means fetch all within fetch method, fetches all pages of artists setlists
+            maxSetlists = -1;
+        }
+        else {
+            try {
+                maxSetlists = Integer.parseInt(setlistRange);
+            }
+            catch (NumberFormatException e) {
+                //fallback to 20 default if invalid input
+                maxSetlists = 50;
+            }
+        }
         //call service method that finds encore of each concert, counts the most common and returns top 5 in JSON
-        return setlistService.getTopEncoreSongs(artist);
+        return setlistService.getTopEncoreSongs(artist, maxSetlists);
     }
     //GET endpoint to return 5 rarest songs for selected artist
     //maps to GET /api/setlists/rarest?artist=Nirvana
     //responds to a call to http://localhost:8080/api/setlists/rarest
     @GetMapping("/rarest")
-    public List<String> getRarestSongs(@RequestParam String artist) {
-        return setlistService.getRarestSongs(artist);
+    public List<String> getRarestSongs(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
+    {
+        int maxSetlists;
+
+        if (setlistRange.equalsIgnoreCase("all")) {
+            //-1 means fetch all within fetch method, fetches all pages of artists setlists
+            maxSetlists = -1;
+        }
+        else {
+            try {
+                maxSetlists = Integer.parseInt(setlistRange);
+            }
+            catch (NumberFormatException e) {
+                //fallback to 20 default if invalid input
+                maxSetlists = 50;
+            }
+        }
+
+        return setlistService.getRarestSongs(artist, maxSetlists);
+
     }
     /* implement in future - endpoint for summary of stats
     //Get stats for artists sets
