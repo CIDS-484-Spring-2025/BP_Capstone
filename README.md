@@ -28,21 +28,30 @@ This project will venture into the world of full-stack development by integratin
 
 ## Goals:
 * Create a user-friendly interface for searching artists.
+* Display setlist statistics in more visually appealing manner
 * Fetch and process setlist data from the Setlist.fm API into insightful statistics.
-* Generate an average setlist based on recent concerts.
 * Display setlist statistics (rare songs, variations, guest performers,frequent encores etc).
 * Allow users to save searches in a PostgreSQL database.
-
 ## Current Progress:
 * Set up technology stack on multiple devices for efficient development
 * Deployed and tested React frontend and Spring Boot backend
 * Verified front-end to back-end connectivity with Postman
-
+* Created a basic user interface for searching artists.
+* API-to-database functionality implemented using DTO classes to convert JSON response into structures matching PostgreSQL database.
+* Implemented functions for fetching and processing data from Setlist.FM API into an artist's rarest songs and most frequent encores.
+* Database set up with table structures defined, implemented.
+* Back-end logic mostly complete with database models, controller classes, repositories. Mostly need to expand Service class functionality to include logic for more stats to display on front end.
+* Addressed issue of empty setlists being returned and saved to database.
+* Added option to let users choose to search stats from artist's last 20 concerts or last 100 or All Time (Unfortunately all time stats take a while due to API rate limits)
+* Separated huge service class into smaller services, restoring the Single Responsibility Principle
+* Added tons of logging across service class to assist in debugging while implementing ranged search feature
+* Refactored long, verbose methods in SetlistService class to more modular, reusable code
 ## Future Timeline:
-### Milestone 2-
-* Set up database and define table structures
-* Create bare-bones user interface and search forms
-* Implement initial API-to-database functionality
+### -Final Goals
+* Improve UI, add features to allow users to sign up for account to save their stats from searches
+* Implement more functions to process data from API into additional statistics.
+* With back end logic mostly solidified, focus is on front-end user experience and features.
 
 ## Videos:
 ### Milestone 1- https://mediaspace.wisconsin.edu/media/t/1_ytsigy5d
+### Milestone 3- https://mediaspace.wisconsin.edu/media/t/1_d3hk4en2

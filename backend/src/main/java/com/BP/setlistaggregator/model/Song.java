@@ -1,7 +1,9 @@
 package com.BP.setlistaggregator.model;
 
 import jakarta.persistence.*;
-
+import java.util.List;
+import com.BP.setlistaggregator.model.Setlist;
+//represents a single song in a setlist
 @Entity
 public class Song {
     @Id
@@ -15,7 +17,7 @@ public class Song {
 
     //many songs in any one setlist
     @ManyToOne
-    //foreign key to link setlist
+    //foreign key in song table to link to setlist table
     @JoinColumn(name = "setlist_id")
     private Setlist setlist;
 

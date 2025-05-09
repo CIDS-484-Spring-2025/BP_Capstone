@@ -1,23 +1,30 @@
 package com.BP.setlistaggregator.model;
 
 import jakarta.persistence.*;
-import java.util.list;
+import java.util.List;
+import com.BP.setlistaggregator.model.Setlist;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+//marks class as JPA entity, enabling spring boot to map it to a table in PostgreSQL database
+//creates "artist" class in database
 @Entity
+//each Artist instance will be 1 row in artist table
 public class Artist {
     //primary key
     @Id
-    //auto generate IDs for artists
+    //auto generate IDs for artists (separate from mbid used by Setlist.fm)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private string name;
+    private String name;
     //musicbrainz id needed for matching with setlist.fm api
     private String mbid;
 
     //one artist can have many setlists
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
+    //prevent recursive serialization
+    @JsonIgnore
     //list to hold artists setlists
-    private list<Setlist> setlists;
+    private List<Setlist> setlists;
 
     //getters setters and constructors
 
@@ -41,7 +48,7 @@ public class Artist {
         return mbid;
     }
 
-    public list<Setlist> getSetlists() {
+    public List<Setlist> getSetlists() {
         return setlists;
     }
     //setters
