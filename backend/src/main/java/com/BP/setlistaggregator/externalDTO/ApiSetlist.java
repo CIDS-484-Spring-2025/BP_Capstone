@@ -1,4 +1,4 @@
-package com.BP.setlistaggregator.dto;
+package com.BP.setlistaggregator.externalDTO;
 
 //DTO (Data Transfer Object) for a setlist from setlist.fm API
 //DTOs= temporary Java object to hold API response data

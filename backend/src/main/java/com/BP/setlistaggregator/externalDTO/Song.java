@@ -1,4 +1,4 @@
-package com.BP.setlistaggregator.dto;
+package com.BP.setlistaggregator.externalDTO;
 
 //represents single song from setlist in raw API form
 public class Song {

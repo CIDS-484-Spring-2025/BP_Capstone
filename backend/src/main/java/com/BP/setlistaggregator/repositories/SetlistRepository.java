@@ -15,5 +15,8 @@ public interface SetlistRepository extends JpaRepository<Setlist, Long> {
     List<Setlist> findByArtistName(String artist);
     //method to check if a setlist already exists for a given concert and date
     boolean existsByArtistAndDate (Artist artist, LocalDate date);
+
+    List<Setlist> findByArtistNameOrderByDateDesc(String name);
+
 }
 

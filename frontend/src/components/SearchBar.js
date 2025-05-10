@@ -1,35 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDebounce } from './useDebounce';
 import './SearchBar.css';
 import SetlistFMCredit from './SetlistFMCredit';
 
 function SearchBar() {
-  const [range, setRange] = useState("50");
+  //holds which dropdown range value is selected
+  const [range, setRange] = useState("20");
   //store artist input from user
   const [artistName, setArtistName] = useState('');
+  const debouncedArtist = useDebounce(artistName, 500);
   //store results from backend
   const [encores, setEncores] = useState([]);
   const [rarest, setRarest] = useState([]);
+  //show loading while data being fetched
+  const [loading, setLoading] = useState(false);
 
-  //update input as user types
-  const handleInputChange = (e) => {
-    setArtistName(e.target.value);
-  };
+//react hook that runs side effects like HTTP requests
+//block to address issue of frontend not updating searches when user changes input
+useEffect(() => {
+  //dont fetch when artist input empty
+  if (!debouncedArtist.trim()) return;
+
+  //clear old results and show loading
+  setEncores([]);
+  setRarest([]);
+  setLoading(true);
+
+  console.log(`fetching stats for ${debouncedArtist} with range=${range}`);
+  //fetch only runs when artist or range changes
+
+  //fetch top encores
+  fetch(`/api/setlists/encores?artist=${encodeURIComponent(debouncedArtist)}&setlistRange=${range}`)
+    //when backend responds with json, store data in encore songs
+    .then(res => res.json())
+    .then(data => setEncores(data))
+    //catch bad responses and log them
+    .catch(err => {
+      console.error('error fetching encore stats:', err);
+      setEncores([]);
+    });
+
+  //fetch rarest songs
+  fetch(`/api/setlists/rarest?artist=${encodeURIComponent(debouncedArtist)}&setlistRange=${range}`)
+    .then(res => res.json())
+    .then(data => setRarest(data))
+    .catch(err => {
+      console.error('Rarest fetch error:', err);
+      setRarest([]);
+    })
+    .finally(() => setLoading(false));
+
+}, [debouncedArtist, range]);
 
   //trigger on search click
   const handleSearch = async () => {
+    setLoading(true);
     try {
       //fetch top encore songs from backend
-      const encoreRes = await fetch(`http://localhost:8080/api/setlists/encores?artist=${artistName}&setlistRange=${range}`);
+      const encoreRes = await fetch(`http://localhost:8080/api/setlists/encores?artist=${debouncedArtist}&setlistRange=${range}`);
       const encoreData = await encoreRes.json();
       console.log("Encore response:", encoreData);
       setEncores(encoreData);
 
       //fetch rarest songs from backend
-      const rareRes = await fetch(`http://localhost:8080/api/setlists/rarest?artist=${artistName}&setlistRange=${range}`);
+      const rareRes = await fetch(`http://localhost:8080/api/setlists/rarest?artist=${debouncedArtist}&setlistRange=${range}`);
       const rareData = await rareRes.json();
       setRarest(rareData);
     } catch (err) {
       console.error("Error fetching setlist data:", err);
+    }
+    finally {
+    setLoading(false);
     }
   };
 
@@ -37,9 +78,9 @@ function SearchBar() {
     <div className="search-bar-container">
       <input
         type="text"
-        placeholder="Search for an artist..."
+        placeholder="Enter Artist name for Setlist stats"
         value={artistName}
-        onChange={handleInputChange}
+        onChange={(e) => setArtistName(e.target.value)}
         className="search-input"
       />
       <label htmlFor="range-select">Select data range:</label>
@@ -51,7 +92,7 @@ function SearchBar() {
       >
         <option value="20">Last 20 Most Recent Shows</option>
         <option value="100">Last 100 Most Recent Shows</option>
-        <option value="all">ALL TIME STATS!!! (May take 10-15 seconds to process due to Setlist.FM API rate limit)</option>
+        <option value="all">ALL TIME STATS!!! (May take 30+ seconds to process due to Setlist.FM API rate limit)</option>
       </select>
 
       <button onClick={handleSearch} className="search-button">
@@ -59,17 +100,24 @@ function SearchBar() {
       </button>
 
       <div className="results-container">
+      {/*Show loading message while fetching data*/}
+      {loading && <p className="loading-message">Loading stats...</p>}
+
         <h3>Top Encore Songs</h3>
         <ul>
           {Array.isArray(encores) && encores.map((song, idx) => (
-            <li key={idx}>{song}</li>
+            <li key={idx}>
+              #{song.rank} — {song.title} ({song.count} plays)
+            </li>
           ))}
         </ul>
 
         <h3>Rarest Songs</h3>
         <ul>
           {Array.isArray(rarest) && rarest.map((song, idx) => (
-            <li key={idx}>{song}</li>
+            <li key={idx}>
+              #{song.rank} — {song.title} ({song.count} plays)
+            </li>
           ))}
         </ul>
         <SetlistFMCredit />
