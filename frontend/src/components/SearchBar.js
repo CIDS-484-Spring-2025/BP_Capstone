@@ -1,14 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDebounce } from './useDebounce';
 import './SearchBar.css';
 import SetlistFMCredit from './SetlistFMCredit';
 
 function SearchBar() {
-  const [range, setRange] = useState("50");
+  //holds which dropdown range value is selected
+  const [range, setRange] = useState("20");
   //store artist input from user
   const [artistName, setArtistName] = useState('');
+  const debouncedArtist = useDebounce(artistName, 500);
   //store results from backend
   const [encores, setEncores] = useState([]);
   const [rarest, setRarest] = useState([]);
+  //show loading while data being fetched
+  const [loading, setLoading] = useState(false);
+
+//react hook that runs side effects like HTTP requests
+//block to address issue of frontend not updating searches when user changes input
+useEffect(() => {
+  //dont fetch when artist input empty
+  if (!debouncedArtist.trim()) return;
+
+  //clear old results and show loading
+  setEncores([]);
+  setRarest([]);
+  setLoading(true);
+
+  console.log(`fetching stats for ${artistName} with range=${range}`);
+  //fetch only runs when artist or range changes
+
+  //fetch top encores
+  fetch(`/api/setlists/encores?artist=${encodeURIComponent(debouncedArtist)}&setlistRange=${range}`)
+    //when backend responds with json, store data in encore songs
+    .then(res => res.json())
+    .then(data => setEncores(data))
+    //catch bad responses and log them
+    .catch(err => {
+      console.error('error fetching encore stats:', err);
+      setEncores([]);
+    });
+
+  //fetch rarest songs
+  fetch(`/api/setlists/rarest?artist=${encodeURIComponent(debouncedArtist)}&setlistRange=${range}`)
+    .then(res => res.json())
+    .then(data => setRarest(data))
+    .catch(err => {
+      console.error('Rarest fetch error:', err);
+      setRarest([]);
+    })
+    .finally(() => setLoading(false));
+
+}, [artistName, range]);
 
   //update input as user types
   const handleInputChange = (e) => {
@@ -37,9 +79,9 @@ function SearchBar() {
     <div className="search-bar-container">
       <input
         type="text"
-        placeholder="Search for an artist..."
+        placeholder="Enter Artist name for Setlist stats"
         value={artistName}
-        onChange={handleInputChange}
+        onChange={(e) => setArtistName(e.target.value)}
         className="search-input"
       />
       <label htmlFor="range-select">Select data range:</label>
