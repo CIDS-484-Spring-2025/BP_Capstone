@@ -26,7 +26,7 @@ useEffect(() => {
   setRarest([]);
   setLoading(true);
 
-  console.log(`fetching stats for ${artistName} with range=${range}`);
+  console.log(`fetching stats for ${debouncedArtist} with range=${range}`);
   //fetch only runs when artist or range changes
 
   //fetch top encores
@@ -50,28 +50,27 @@ useEffect(() => {
     })
     .finally(() => setLoading(false));
 
-}, [artistName, range]);
-
-  //update input as user types
-  const handleInputChange = (e) => {
-    setArtistName(e.target.value);
-  };
+}, [debouncedArtist, range]);
 
   //trigger on search click
   const handleSearch = async () => {
+    setLoading(true);
     try {
       //fetch top encore songs from backend
-      const encoreRes = await fetch(`http://localhost:8080/api/setlists/encores?artist=${artistName}&setlistRange=${range}`);
+      const encoreRes = await fetch(`http://localhost:8080/api/setlists/encores?artist=${debouncedArtist}&setlistRange=${range}`);
       const encoreData = await encoreRes.json();
       console.log("Encore response:", encoreData);
       setEncores(encoreData);
 
       //fetch rarest songs from backend
-      const rareRes = await fetch(`http://localhost:8080/api/setlists/rarest?artist=${artistName}&setlistRange=${range}`);
+      const rareRes = await fetch(`http://localhost:8080/api/setlists/rarest?artist=${debouncedArtist}&setlistRange=${range}`);
       const rareData = await rareRes.json();
       setRarest(rareData);
     } catch (err) {
       console.error("Error fetching setlist data:", err);
+    }
+    finally {
+    setLoading(false);
     }
   };
 
@@ -93,7 +92,7 @@ useEffect(() => {
       >
         <option value="20">Last 20 Most Recent Shows</option>
         <option value="100">Last 100 Most Recent Shows</option>
-        <option value="all">ALL TIME STATS!!! (May take 10-15 seconds to process due to Setlist.FM API rate limit)</option>
+        <option value="all">ALL TIME STATS!!! (May take 30+ seconds to process due to Setlist.FM API rate limit)</option>
       </select>
 
       <button onClick={handleSearch} className="search-button">
@@ -101,6 +100,9 @@ useEffect(() => {
       </button>
 
       <div className="results-container">
+      {/*Show loading message while fetching data*/}
+      {loading && <p className="loading-message">Loading stats...</p>}
+
         <h3>Top Encore Songs</h3>
         <ul>
           {Array.isArray(encores) && encores.map((song, idx) => (

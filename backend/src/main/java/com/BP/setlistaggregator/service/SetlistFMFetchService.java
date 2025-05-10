@@ -5,9 +5,17 @@ import com.BP.setlistaggregator.model.Artist;
 import com.BP.setlistaggregator.model.Setlist;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import java.util.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+//increase max buffer size
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import reactor.netty.http.client.HttpClient;
+import org.springframework.core.io.buffer.DataBufferLimitException;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import java.time.Duration;
+
 
 //service class that handles interaction with the Setlist.fm API
 @Service
@@ -17,10 +25,19 @@ public class SetlistFMFetchService {
 
     public SetlistFMFetchService(WebClient.Builder builder) {
         //Allows us to build an HTTP client with a base URL of Setlist.FM's API
-        this.webClient = builder.baseUrl("https://api.setlist.fm/rest/1.0").build();
+        //increased buffer prevents spring crashing when API sends too much data on one page
+        this.webClient = builder
+                .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+                        .responseTimeout(Duration.ofSeconds(20))))
+                .codecs(configurer -> configurer.defaultCodecs()
+                        //10mb buffer
+                        .maxInMemorySize(10 * 1024 * 1024))
+                .baseUrl("https://api.setlist.fm/rest/1.0")
+                .build();
     }
     //helper method to send GET request to Setlist.fm API for a specific artist page
     public SetlistResponseWrapper fetchSetlistPage(String artistName, int page, int size) {
+        try {
             //send request to Setlist.fm API for one page of setlists
             return webClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -41,6 +58,26 @@ public class SetlistFMFetchService {
                     //block request until full data received
                     .block();
         }
+        catch (WebClientResponseException.NotFound e) {
+            //404 error — reached past last page
+            System.out.println("Page " + page + " not found for artist " + artistName + ". Ending pagination.");
+            return null;
+        } catch (WebClientResponseException.TooManyRequests e) {
+            //log or backoff here
+            System.out.println("Rate limit hit! Backing off 60 sec!!!!!");
+            try {
+                //sleep 60 sec
+                Thread.sleep(60_000);
+            }
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            throw e;
+        } catch (Exception e) {
+            System.out.println("Failed to fetch page " + page + " for " + artistName + ": " + e.getMessage());
+            return null;
+        }
+    }
     //Transforms the API data/DTOs into database entities
     //method to convert API setlist from Setlist.fm into local Setlist entity saveable to local DB
     public Setlist mapApiSetlistToEntity(ApiSetlist apiSetlist, Artist artist) {
@@ -90,8 +127,8 @@ public class SetlistFMFetchService {
 
                         dbSongs.add(dbSong);
 
-                        //verify positions
-                        System.out.println("Saved song '" + apiSong.getName() + "' at position " + positionCtr);
+                        //option to verify positions
+                        //System.out.println("Saved song '" + apiSong.getName() + "' at position " + positionCtr);
 
 
                         //debug log to confirm songs are being parsed and position being assigned correctly
