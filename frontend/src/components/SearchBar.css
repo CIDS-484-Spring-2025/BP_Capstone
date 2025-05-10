@@ -62,22 +62,20 @@
 }
 
 /*Styling for result lists*/
-.results-container h3 {
-  margin-bottom: 0.5rem;
-  font-size: 20px;
-  color: #333;
+.results-panel {
+  margin-top: 3rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.results-container ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 auto 1.5rem;
-}
-
-.results-container li {
-  padding: 6px 0;
-  border-bottom: 1px solid #ddd;
-  font-size: 16px;
+.loading-message {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  margin-top: 2rem;
 }
 
 

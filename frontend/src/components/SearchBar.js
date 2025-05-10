@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDebounce } from './useDebounce';
+import StatsPanel from './StatsPanel';
 import './SearchBar.css';
 import SetlistFMCredit from './SetlistFMCredit';
 
@@ -12,6 +13,8 @@ function SearchBar() {
   //store results from backend
   const [encores, setEncores] = useState([]);
   const [rarest, setRarest] = useState([]);
+  const [averageLength, setAverageLength] = useState(null);
+
   //show loading while data being fetched
   const [loading, setLoading] = useState(false);
 
@@ -66,6 +69,12 @@ useEffect(() => {
       const rareRes = await fetch(`http://localhost:8080/api/setlists/rarest?artist=${debouncedArtist}&setlistRange=${range}`);
       const rareData = await rareRes.json();
       setRarest(rareData);
+
+      //fetch avg  setlist length
+      const avgLengthRes = await fetch(`http://localhost:8080/api/setlists/averageLength?artist=${debouncedArtist}&setlistRange=${range}`);
+      const avgLengthData = await avgLengthRes.json();
+      setAverageLength(avgLengthData);
+
     } catch (err) {
       console.error("Error fetching setlist data:", err);
     }
@@ -74,7 +83,13 @@ useEffect(() => {
     }
   };
 
+//confirm what frontend actually received to debug
+console.log("Encore songs:", encores);
+console.log("Rarest songs:", rarest);
+console.log("Avg length:", averageLength);
+
   return (
+  <>
     <div className="search-bar-container">
       <input
         type="text"
@@ -98,31 +113,23 @@ useEffect(() => {
       <button onClick={handleSearch} className="search-button">
         Search
       </button>
-
-      <div className="results-container">
-      {/*Show loading message while fetching data*/}
-      {loading && <p className="loading-message">Loading stats...</p>}
-
-        <h3>Top Encore Songs</h3>
-        <ul>
-          {Array.isArray(encores) && encores.map((song, idx) => (
-            <li key={idx}>
-              #{song.rank} — {song.title} ({song.count} plays)
-            </li>
-          ))}
-        </ul>
-
-        <h3>Rarest Songs</h3>
-        <ul>
-          {Array.isArray(rarest) && rarest.map((song, idx) => (
-            <li key={idx}>
-              #{song.rank} — {song.title} ({song.count} plays)
-            </li>
-          ))}
-        </ul>
-        <SetlistFMCredit />
-      </div>
     </div>
+
+    <div className="results-panel">
+          {loading && <p className="loading-message">Loading stats...</p>}
+
+          {!loading && encores && rarest && averageLength !== null && (
+            <>
+              <StatsPanel
+                averageLength={averageLength}
+                encores={encores}
+                rarest={rarest}
+              />
+              <SetlistFMCredit />
+            </>
+          )}
+        </div>
+        </>
   );
 }
 

@@ -107,7 +107,7 @@ public class SetlistService {
             //return empty list if no data in response or if setlist array is null
             if (response == null || response.getSetlist() == null || response.getSetlist().isEmpty())
             {
-                //System.out.println("No more setlists returned from API.");
+                System.out.println("issue- not backend, API returned no setlist data for page " + page + " — possible rate limit hit, artist typo, or no concerts found.");
                 break;
             }
 
