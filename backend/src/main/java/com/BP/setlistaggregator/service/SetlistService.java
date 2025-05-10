@@ -242,15 +242,15 @@ public class SetlistService {
     private boolean gottaThrottle (boolean fetchAll, int maxSetlists, int currentPage) {
         //want to throttle only when fetching a lot of data (fetchAll option or maxSetlists > 100
         boolean isLargeFetch = fetchAll || maxSetlists > 100;
-        //always throttle every 2 pages
-        return isLargeFetch && currentPage % 2 == 0;
+        //always throttle every 2 pages after page 1 in heavy reqs
+        return isLargeFetch && currentPage > 1 && currentPage % 2 == 0;
     }
     //helper method to pause execution (sleep) to avoid rate limits (only should occur if fetching all time)
     private void throttleTime() {
         try {
             //logging to help understand when we are requesting too much for testing
             System.out.println("Throttling to avoid API rate limit.... sleepy time for 2.5 seconds. ZZZZZZZZZZZ");
-            //sleep 2.5 second every other page
+            //sleep 2.5 second every 2 pages
             Thread.sleep(2500);
         }
         catch (InterruptedException e) {
@@ -360,8 +360,16 @@ public class SetlistService {
                 continue;
             }
             //loop thru each song to count its appearances
+            //log to verify is invalid songs were issue stopping calcs from returning
+            int skipped = 0;
             for (Song song : songs) {
                 String title = song.getTitle();
+                //bug fix- skip song if null or blank
+                if (title == null || title.isBlank()) {
+                    System.out.println("Skipping song with invalid title in rarest calculation");
+                    skipped++;
+                    continue;
+                }
                 int count = songCounts.getOrDefault(title, 0);
                 songCounts.put(title, count + 1);
 
@@ -369,6 +377,7 @@ public class SetlistService {
                 //System.out.println("Counting the song: " + title + ",  total so far is: " + (count + 1));
 
             }
+            System.out.println("Skipped " + skipped + " songs due to blank or null titles");
         }
 
         //log songCounts before we sort them to make sure counting function correct
@@ -383,6 +392,41 @@ public class SetlistService {
             System.out.println(" → " + song.getTitle() + " (played " + song.getCount() + " times)");
         }
         return rarest;
+    }
+    //method to calculate thr average # of songs per setlist in given range
+    public double getAvgSetlistLength (String artist, int maxSetlists) {
+
+        //get all setlists from db or fetcher
+        List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
+
+        //track total song count
+        int totalSongs = 0;
+        //track total setlists with valid songs (not empty)
+        int setsWithSongs = 0;
+
+        //loop thru each setlist
+        for (Setlist setlist : setlists) {
+            //get song list
+            List<Song> songs = extractSongs(setlist);
+
+            //skip empty or null song lists
+            if (songs == null || songs.isEmpty()) {
+                continue;
+            }
+            //increment total songs by # in setlist
+            totalSongs += songs.size();
+            //increment valid setlist ctr
+            setsWithSongs++;
+        }
+        //avoid dividing by 0
+        if (setsWithSongs == 0) {
+            return 0.0;
+        }
+        //log results to console
+        System.out.println("Average setlist length for " + artist + ": " + ((double) totalSongs / setsWithSongs));
+        //calculate average and return as dbl
+        return (double) totalSongs / setsWithSongs;
+
     }
 
     //helper method to return top N ranked songs based on play counts

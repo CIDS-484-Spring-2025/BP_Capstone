@@ -56,6 +56,16 @@ public class SetlistController {
         return setlistService.getRarestSongs(artist, maxSetlists);
 
     }
+    //GET endpoint to return average setlist length
+    //maps to GET /api/setlists/averageLength?artist=Radiohead
+    @GetMapping("/averageLength")
+    public double getAvgSetlistLength(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange) {
+        int maxSetlists = parseSetlistRange(setlistRange);
+
+        //call service method to calculate average number of songs per concert
+        return setlistService.getAvgSetlistLength(artist, maxSetlists);
+    }
+
     //helper method to convert user input to maxSetlists int value
     //avoiding repeat logic in endpoints
     private int parseSetlistRange(String setlistRange) {

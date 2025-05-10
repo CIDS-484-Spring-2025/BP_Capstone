@@ -78,7 +78,7 @@ useEffect(() => {
     <div className="search-bar-container">
       <input
         type="text"
-        placeholder="Enter Artist name for Setlist stats"
+        placeholder="Enter an Artist Name to Generate Cool Concert Stats"
         value={artistName}
         onChange={(e) => setArtistName(e.target.value)}
         className="search-input"

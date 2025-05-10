@@ -64,10 +64,10 @@ public class SetlistFMFetchService {
             return null;
         } catch (WebClientResponseException.TooManyRequests e) {
             //log or backoff here
-            System.out.println("Rate limit hit! Backing off 60 sec!!!!!");
+            System.out.println("Rate limit hit! Backing off 30 sec!!!!!");
             try {
-                //sleep 60 sec
-                Thread.sleep(60_000);
+                //sleep 30 sec
+                Thread.sleep(30_000);
             }
             catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
