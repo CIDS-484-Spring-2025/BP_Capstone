@@ -62,14 +62,18 @@ function SearchBar() {
         <h3>Top Encore Songs</h3>
         <ul>
           {Array.isArray(encores) && encores.map((song, idx) => (
-            <li key={idx}>{song}</li>
+            <li key={idx}>
+              #{song.rank} — {song.title} ({song.count} plays)
+            </li>
           ))}
         </ul>
 
         <h3>Rarest Songs</h3>
         <ul>
           {Array.isArray(rarest) && rarest.map((song, idx) => (
-            <li key={idx}>{song}</li>
+            <li key={idx}>
+              #{song.rank} — {song.title} ({song.count} plays)
+            </li>
           ))}
         </ul>
         <SetlistFMCredit />

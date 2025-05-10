@@ -1,6 +1,6 @@
 package com.BP.setlistaggregator.service;
 
-import com.BP.setlistaggregator.dto.*;
+import com.BP.setlistaggregator.externalDTO.*;
 import com.BP.setlistaggregator.model.Artist;
 import com.BP.setlistaggregator.model.Setlist;
 import org.springframework.stereotype.Service;
@@ -66,30 +66,42 @@ public class SetlistFMFetchService {
         setlist.setCity("Unknown City");
         setlist.setCountry("Unknown Country");
 
+        //global position counter across all songs in all sections
+        int positionCtr = 1;
+
         //create empty list to hold songs (explicitly of internal song model because of 2 Song classes)
         List<com.BP.setlistaggregator.model.Song> dbSongs = new ArrayList<>();
 
-        //look thru each section of API setlist
+        //look thru each section of API setlist once
         if (apiSetlist.getSets() != null && apiSetlist.getSets().getSet() != null) {
             for (SetSection section : apiSetlist.getSets().getSet()) {
                 if (section.getSong() != null) {
-                    int positionCtr = 1;
                     //convert each API song to DB song object and add it to list
-                    for (com.BP.setlistaggregator.dto.Song apiSong : section.getSong()) {
+                    //fix for top encore songs- loop over all sections instead of just 1
+                    for (com.BP.setlistaggregator.externalDTO.Song apiSong : section.getSong()) {
                         //create new Song entity
                         com.BP.setlistaggregator.model.Song dbSong = new com.BP.setlistaggregator.model.Song();
                         dbSong.setTitle(apiSong.getName());
                         //link song to this setlist
                         dbSong.setSetlist(setlist);
+
+                        //set song position!!!
+                        dbSong.setPosition(positionCtr);
+
                         dbSongs.add(dbSong);
 
+                        //verify positions
+                        System.out.println("Saved song '" + apiSong.getName() + "' at position " + positionCtr);
+
+
                         //debug log to confirm songs are being parsed and position being assigned correctly
-                        System.out.println("Mapped song: " + apiSong.getName() + " at position " + positionCtr);
+                        //System.out.println("Mapped song: " + apiSong.getName() + " at position " + positionCtr);
                         positionCtr++;
                     }
                 }
             }
         }
+
         //new method to check if setlist is empty and avoid saving it to db
         if (dbSongs.isEmpty()) {
             System.out.println("Skipping empty setlist for artist " + artist.getName() + " on " + apiSetlist.getEventDate());
