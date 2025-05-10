@@ -1,4 +1,4 @@
-package com.BP.setlistaggregator.dto;
+package com.BP.setlistaggregator.externalDTO;
 
 import java.util.List;
 

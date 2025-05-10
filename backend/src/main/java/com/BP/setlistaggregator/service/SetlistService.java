@@ -5,10 +5,12 @@ import com.BP.setlistaggregator.model.Artist;
 //only importing model class, must fully qualify dto Song when used
 import com.BP.setlistaggregator.model.Song;
 
-import com.BP.setlistaggregator.dto.SetSection;
-import com.BP.setlistaggregator.dto.ApiSetlist;
-import com.BP.setlistaggregator.dto.SetlistResponseWrapper;
-import com.BP.setlistaggregator.dto.Sets;
+import com.BP.setlistaggregator.externalDTO.SetSection;
+import com.BP.setlistaggregator.externalDTO.ApiSetlist;
+import com.BP.setlistaggregator.externalDTO.SetlistResponseWrapper;
+import com.BP.setlistaggregator.externalDTO.Sets;
+import com.BP.setlistaggregator.internalDTO.SongsRanked;
+
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -62,7 +64,12 @@ public class SetlistService {
         if (existingSetlists.isEmpty() || fetchAll || notEnoughSetlists) {
             //log that we're fetching more data from the API for an artist that already existed in db
             System.out.println("Fetching more data from Setlist.fm API for: " + artist);
-            return fetchFromSetlistFm(artist, maxSetlists);
+            List<Setlist> newFetches = fetchFromSetlistFm(artist, maxSetlists);
+
+            //combine newly fetched setlists with existing
+            List<Setlist> combined = new ArrayList<>(existingSetlists);
+            combined.addAll(newFetches);
+            return combined;
         }
         //return db stats if it already satisfies request
         return existingSetlists;
@@ -87,9 +94,6 @@ public class SetlistService {
         int maxDuplicatePages = 4;
         //loop to retrieve setlists from a certain # of pages on setlistfm. loop stops once we reach maxSetlists and boolean stop = true
         while (true) {
-
-            //final copy of int to fix lambda bug
-            final int currentPage = page;
 
             //logging to confirm pagination works
             System.out.println("Fetching page " + page + " of setlists for " + artistName);
@@ -143,17 +147,18 @@ public class SetlistService {
             //add them to full collection so we can track progress
             allSetlists.addAll(dbSetlists);
 
+            //early exit if we've collected enough setlists for range
+            if (!fetchAll && allSetlists.size() >= maxSetlists) {
+                System.out.println("Fetched enough setlists to satisfy maxSetlists = " + maxSetlists);
+                break;
+            }
+
             //confirm songs are saved to the db
             System.out.println("saved " + dbSetlists.size() + " setlists and their songs to the database.");
 
             //confirm setlists are being saved
             for (Setlist s : dbSetlists) {
                 System.out.println("Saved Setlist with " + s.getSongs().size() + " songs on " + s.getDate());
-            }
-            //break if we reach max setlists
-            if (!fetchAll && allSetlists.size() >= maxSetlists) {
-                System.out.println("Fetched enough setlists to satisfy maxSetlists = " + maxSetlists);
-                break;
             }
             //check if we need to pause calls to avoid 429 errors
             if (gottaThrottle(fetchAll, maxSetlists, page)) {
@@ -162,6 +167,11 @@ public class SetlistService {
 
             page++;
         }
+        //trim size to be safe
+        if (!fetchAll && allSetlists.size() > maxSetlists) {
+            allSetlists = allSetlists.subList(0, maxSetlists);
+        }
+
         //logging after loop to ensure returning correct data
         System.out.println("total setlists fetched and saved: " + allSetlists.size());
 
@@ -175,22 +185,12 @@ public class SetlistService {
 
         //loop each API setlist and check if it already exists locally
         for (ApiSetlist apiSetlist : apiSetlists) {
-            try {
-                //parse event date string
-                LocalDate date = LocalDate.parse(apiSetlist.getEventDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-
-                //check in db if artist already has setlist on date
-                if (setlistRepository.existsByArtistAndDate(artist, date)) {
-                    duplicatesOnPageCtr++;
-                }
-            }
-            catch (Exception e) {
-                //log any dates that we couldnt parse
-                System.out.println("Error parsing date for duplicate check: " + apiSetlist.getEventDate());
+            if (isDuplicateSetlist(apiSetlist, artist)) {
+                duplicatesOnPageCtr++;
             }
         }
-        //return true only if every setlist on page is duplicate
-        return duplicatesOnPageCtr == apiSetlists.size();
+            //return true only if every setlist on page is duplicate
+            return duplicatesOnPageCtr == apiSetlists.size();
     }
     //helper method to convert API setlists (from current page) into DB entities and filter out duplicates
     private List<Setlist> mapAndFilterNewSetlists(List<ApiSetlist> apiSetlists, Artist artist, int maxSetlists, boolean fetchAll, int ctr) {
@@ -199,13 +199,8 @@ public class SetlistService {
         //loop thru all setlists returned by API
         for (ApiSetlist apiSetlist : apiSetlists) {
             try {
-                //parse concert date to check for duplicates
-                LocalDate parsedDate = LocalDate.parse(apiSetlist.getEventDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-
-                //skip and dont save locally if this setlist is already saved for this artist on this date
-                if (setlistRepository.existsByArtistAndDate(artist, parsedDate)) {
-                    //log duplicate
-                    System.out.println("Skipping duplicate setlist on " + parsedDate);
+                if (isDuplicateSetlist(apiSetlist, artist)) {
+                    System.out.println("Skipping duplicate setlist on " + apiSetlist.getEventDate());
                     continue;
                 }
                 //convert API DTO to db entity if setlist not saved already
@@ -268,7 +263,7 @@ public class SetlistService {
     }
 
     //method to calculate an artists top 5 encore songs (final song)
-    public List<String> getTopEncoreSongs(String artist, int maxSetlists) {
+    public List<SongsRanked> getTopEncoreSongs(String artist, int maxSetlists) {
 
         //look up the setlists of user entered artist by calling method (from DB or API)
         List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
@@ -291,6 +286,9 @@ public class SetlistService {
 
             //loop through all songs to find one with highest position
             for (Song song : songs) {
+                if (song.getPosition() == 0) {
+                    continue;
+                }
                 if (encore == null || song.getPosition() > encore.getPosition()) {
                     encore = song;
                 }
@@ -298,12 +296,17 @@ public class SetlistService {
             //count encore song if found
             if (encore != null) {
                 String title = encore.getTitle();
-                int count = encoreCounts.getOrDefault(title, 0);
-                encoreCounts.put(title, count + 1);
-
-                //logging to verify mapping works and songs are saved
-                //if doesn't print, extractSongs call is pulling from setlists with empty song lists- meaning mapping doesn't work or songs not being sdaved
-                System.out.println("Encore song found, name:  " + title + " at position " + encore.getPosition());
+                //dont add encore song if blank title
+                if (title != null && !title.isBlank()) {
+                    int count = encoreCounts.getOrDefault(title, 0);
+                    encoreCounts.put(title, count + 1);
+                    //logging to verify mapping works and songs are saved
+                    //if doesn't print, extractSongs call is pulling from setlists with empty song lists- meaning mapping doesn't work or songs not being sdaved
+                    System.out.println("Encore song found, name:  " + title + " at position " + encore.getPosition());
+                }
+                else {
+                    System.out.println("Encore had no valid title: " + encore);
+                }
             }
             else {
                 System.out.println("No encore song found in setlist with " + songs.size() + " songs");
@@ -313,19 +316,19 @@ public class SetlistService {
         System.out.println("Total unique encore songs counted: " + encoreCounts.size());
 
         //call helper method to get 5 most common encore songs sorted
-        List<String> topEncores = getTopKeys(encoreCounts, 5, false);
+        List<SongsRanked> topEncores = getTopRankedSongs(encoreCounts, 5, false);
 
         //log final output
         System.out.println("Top 5 encore songs:");
-        for (String song : topEncores) {
-            System.out.println(" - " + song + " (played " + encoreCounts.get(song) + " times)");
+        for (SongsRanked song : topEncores) {
+            System.out.println(" - " + song.getTitle() + " (played " + song.getCount() + " times)");
         }
         return topEncores;
 
     }
 
     //method to return 5 rarest songs(least played) for selected artist
-    public List<String> getRarestSongs(String artist, int maxSetlists) {
+    public List<SongsRanked> getRarestSongs(String artist, int maxSetlists) {
         //retrieve setlists for artist
         List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
 
@@ -357,44 +360,50 @@ public class SetlistService {
         System.out.println("Total unique songs counted: " + songCounts.size());
 
         //call helper method to sort descending (boolean false) and return top 5 rarest
-        List<String> rarest = getTopKeys(songCounts, 5, true);
+        List<SongsRanked> rarest = getTopRankedSongs(songCounts, 5, true);
 
         //log final output
         System.out.println("Top 5 rarest songs:");
-        for (String song : rarest) {
-            System.out.println(" → " + song + " (played " + songCounts.get(song) + " times)");
+        for (SongsRanked song : rarest) {
+            System.out.println(" → " + song.getTitle() + " (played " + song.getCount() + " times)");
         }
         return rarest;
     }
 
-    //helper method to return top N keys from map based on their values
+    //helper method to return top N ranked songs based on play counts
     //ascending = true, lowest values first, used with getRarestSongs
     //descending = false, highest values first, used with getTopEncoreSongs
-    private List<String> getTopKeys(Map<String, Integer> map, int n, boolean ascending) {
+    private List<SongsRanked> getTopRankedSongs(Map<String, Integer> map, int n, boolean ascending) {
         //convert map entries to list for sorting
         List<Map.Entry<String, Integer>> entries = new ArrayList<>(map.entrySet());
 
-        //bubble sort by value
+        //selection sort by value
         for (int i = 0; i < entries.size(); i++) {
+            int selected = i;
             for (int j = i + 1; j < entries.size(); j++) {
-                int compare = entries.get(i).getValue() - entries.get(j).getValue();
-                if ((ascending && compare > 0) || (!ascending && compare < 0)) {
-                    //swap entries
-                    Map.Entry<String, Integer> temp = entries.get(i);
-                    entries.set(i, entries.get(j));
-                    entries.set(j, temp);
+                int compare = entries.get(j).getValue() - entries.get(selected).getValue();
+                if ((ascending && compare < 0) || (!ascending && compare > 0)) {
+                    selected = j;
                 }
             }
+            //swap the selected element with the current ith element
+            Map.Entry<String, Integer> temp = entries.get(i);
+            entries.set(i, entries.get(selected));
+            entries.set(selected, temp);
         }
         //log sorting direction
         System.out.println("Sorting top " + n + " keys by " + (ascending ? "lowest" : "highest") + " values");
 
-        //add top N keys to the result list
-        List<String> topKeys = new ArrayList<>();
+        //convert to ranked DTOs of songs instead of just titles so we can return stats
+        List <SongsRanked> topSongs = new ArrayList<>();
+
         for (int i = 0; i < entries.size() && i < n; i++) {
-            topKeys.add(entries.get(i).getKey());
+            Map.Entry<String, Integer> entry = entries.get(i);
+            //add 1 to i so first song is ranked 1 and not 0
+            //create new object of DTO and add it to list
+            topSongs.add(new SongsRanked(i + 1, entry.getKey(), entry.getValue()));
         }
-        return topKeys;
+        return topSongs;
     }
 
     //helper method to extract all songs from Setlist object
@@ -417,4 +426,20 @@ public class SetlistService {
         //return list of all songs for this setlist
         return songs;
     }
-}
+
+    //helper method to determine if given API setlist already in db
+    private boolean isDuplicateSetlist(ApiSetlist apiSetlist, Artist artist) {
+        try {
+            LocalDate date = LocalDate.parse(apiSetlist.getEventDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            return setlistRepository.existsByArtistAndDate(artist, date);
+        }
+        catch (Exception e) {
+            System.out.println("Date parse error for duplicate check: " + apiSetlist.getEventDate());
+            // treat unparseable entries as duplicates to be safe
+            return true;
+        }
+        }
+    }
+
+
+
