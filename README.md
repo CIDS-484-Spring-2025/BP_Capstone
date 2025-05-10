@@ -46,6 +46,11 @@ This project will venture into the world of full-stack development by integratin
 * Separated huge service class into smaller services, restoring the Single Responsibility Principle
 * Added tons of logging across service class to assist in debugging while implementing ranged search feature
 * Refactored long, verbose methods in SetlistService class to more modular, reusable code
+* Fixed critical bug preventing encore stats from showing by ensuring song positions are tracked globally
+* Encore and rarest song statistics now reflect accurate concert order 
+* Simplified service-layer logic in SetlistService by replacing redundant sorting logic with clear selection sort 
+* Moved duplicate logic to helper method in controllers
+* Improved backend logging for debugging setlist mapping and song saving
 ## Future Timeline:
 ### -Final Goals
 * Improve UI, add features to allow users to sign up for account to save their stats from searches
