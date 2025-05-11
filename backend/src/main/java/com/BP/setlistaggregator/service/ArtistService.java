@@ -4,6 +4,7 @@ import com.BP.setlistaggregator.repositories.ArtistRepository;
 import com.BP.setlistaggregator.model.Artist;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.List;
 
 //service class solely for handling artist objects
 @Service
@@ -34,7 +35,18 @@ public class ArtistService {
     }
 
     public Optional<Artist> findByName(String name) {
+
         return artistRepository.findByNameIgnoreCase(name);
+
+    }
+    //helper method to look up artist using MusicBrainz ID (mbid)
+    public Optional<Artist> findByMbid(String mbid) {
+        return artistRepository.findByMbid(mbid);
+    }
+    //method to get all artists from db
+    public List<Artist> getAllArtists() {
+        //delegate to repository to fetch all rows from artist table
+        return artistRepository.findAll();
     }
 
     //implement in future: get artist stats, artist suggestions, etc.

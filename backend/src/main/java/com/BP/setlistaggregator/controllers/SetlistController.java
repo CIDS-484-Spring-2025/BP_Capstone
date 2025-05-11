@@ -5,6 +5,8 @@ import com.BP.setlistaggregator.repositories.SetlistRepository;
 import com.BP.setlistaggregator.service.SetlistService;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import com.BP.setlistaggregator.internalDTO.SongsRanked;
 
 //class to handle requests involving setlist data, stats
@@ -64,6 +66,24 @@ public class SetlistController {
 
         //call service method to calculate average number of songs per concert
         return setlistService.getAvgSetlistLength(artist, maxSetlists);
+    }
+    //new consolidated GET endpoint to return all processed setlist stats in one object
+    //maps to: GET /api/setlists/stats?artist=Radiohead&setlistRange=50
+    //have to return a map in order to return the stats together in one response
+    //Map groups values under separate keys, with keys being labels like "encores", "rarest"
+    //and values being List<SongsRanked> or double
+    //Spring automatically serializes the map into JSON to return to frontend
+    @GetMapping("/stats")
+    public Map<String, Object> getCombinedStats(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange) {
+        int maxSetlists = parseSetlistRange(setlistRange);
+
+        //prepare stats in a key/value map
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("encores", setlistService.getTopEncoreSongs(artist, maxSetlists));
+        stats.put("rarest", setlistService.getRarestSongs(artist, maxSetlists));
+        stats.put("averageLength", setlistService.getAvgSetlistLength(artist, maxSetlists));
+
+        return stats;
     }
 
     //helper method to convert user input to maxSetlists int value

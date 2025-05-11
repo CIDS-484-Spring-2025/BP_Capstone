@@ -28,31 +28,26 @@ useEffect(() => {
   setEncores([]);
   setRarest([]);
   setLoading(true);
+  setAverageLength(null);
 
   console.log(`fetching stats for ${debouncedArtist} with range=${range}`);
   //fetch only runs when artist or range changes
 
-  //fetch top encores
-  fetch(`/api/setlists/encores?artist=${encodeURIComponent(debouncedArtist)}&setlistRange=${range}`)
+  //new single fetch to combined stats endpoint
+  fetch(`/api/setlists/stats?artist=${debouncedArtist}&setlistRange=${range}`)
     //when backend responds with json, store data in encore songs
-    .then(res => res.json())
-    .then(data => setEncores(data))
+    .then(response => response.json())
+        .then(data => {
+          setEncores(data.encores);
+          setRarest(data.rarest);
+          setAverageLength(data.averageLength);
+          setLoading(false);
+        })
     //catch bad responses and log them
-    .catch(err => {
-      console.error('error fetching encore stats:', err);
-      setEncores([]);
-    });
-
-  //fetch rarest songs
-  fetch(`/api/setlists/rarest?artist=${encodeURIComponent(debouncedArtist)}&setlistRange=${range}`)
-    .then(res => res.json())
-    .then(data => setRarest(data))
-    .catch(err => {
-      console.error('Rarest fetch error:', err);
-      setRarest([]);
-    })
-    .finally(() => setLoading(false));
-
+    .catch(error => {
+          console.error("Error fetching stats:", error);
+          setLoading(false);
+        });
 }, [debouncedArtist, range]);
 
   //trigger on search click

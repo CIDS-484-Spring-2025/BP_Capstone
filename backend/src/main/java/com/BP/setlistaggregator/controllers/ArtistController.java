@@ -1,9 +1,11 @@
 package com.BP.setlistaggregator.controllers;
 
 import com.BP.setlistaggregator.model.Artist;
+import com.BP.setlistaggregator.service.ArtistService;
 import com.BP.setlistaggregator.repositories.ArtistRepository;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.HashMap;
 /*controllers act as liasion between front and back ends by:
 Accepting HTTP requests from front end (or postman)
 Triggering service layer methods like SetlistService
@@ -16,13 +18,14 @@ Returning responses back to the front end in JSON form
 @RequestMapping("/api/artists")
 public class ArtistController {
 
-    //dependency injection of ArtistRepository
-    private final ArtistRepository artistRepository;
+    //dependency injection of ArtistService
+    //changed from repository so we don't talk directly to respository
+    private final ArtistService artistService;
 
     //constructor injection of repository automatically by Spring
-    public ArtistController(ArtistRepository artistRepository) {
+    public ArtistController(ArtistService artistService) {
 
-        this.artistRepository = artistRepository;
+        this.artistService = artistService;
 
     }
 
@@ -30,13 +33,27 @@ public class ArtistController {
     @GetMapping
     public List<Artist> getAllArtists() {
         //call repo to retuen all artists
-        return artistRepository.findAll();
+        return artistService.getAllArtists();
     }
     //POST request to save new artist to our database
     //accepts Artist object as JSON in request body then saves it to db
     @PostMapping
     public Artist addArtist(@RequestBody Artist artist) {
-        //save received artist object into our database
-        return artistRepository.save(artist);
+        //save received artist object into our database using service method
+        return artistService.findOrCreateArtist(artist.getName());
     }
+    //GET endpoint for single artist queries
+    @GetMapping("/{name}")
+    public Artist getArtistByName(@PathVariable String name) {
+        return artistService.findByName(name).orElse(null);
+    }
+
+    //get by MBID (MusicBrainz ID) to implement in future to resolve artist ambiguities (i.e. names like Future)
+    //Maps to GET /api/artists/mbid/MBIDhere
+    @GetMapping("/mbid/{mbid}")
+    public Artist getArtistByMbid(@PathVariable String mbid) {
+        //use service layer to look up artist by mbid
+        return artistService.findByMbid(mbid).orElse(null);
+    }
+
 }
