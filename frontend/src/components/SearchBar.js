@@ -93,7 +93,7 @@ console.log("Avg length:", averageLength);
     <div className="search-bar-container">
       <input
         type="text"
-        placeholder="Enter an Artist Name to Generate Cool Concert Stats"
+        placeholder="Enter Artist Name for Setlist Insights"
         value={artistName}
         onChange={(e) => setArtistName(e.target.value)}
         className="search-input"
@@ -107,7 +107,7 @@ console.log("Avg length:", averageLength);
       >
         <option value="20">Last 20 Most Recent Shows</option>
         <option value="100">Last 100 Most Recent Shows</option>
-        <option value="all">ALL TIME STATS!!! (May take 30+ seconds to process due to Setlist.FM API rate limit)</option>
+        <option value="all">ALL TIME STATS!!! (May take 60+ seconds to process due to Setlist.FM API rate limit)</option>
       </select>
 
       <button onClick={handleSearch} className="search-button">

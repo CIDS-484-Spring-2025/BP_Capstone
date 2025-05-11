@@ -98,6 +98,9 @@ public class SetlistService {
         //loop to retrieve setlists from a certain # of pages on setlistfm. loop stops once we reach maxSetlists and boolean stop = true
         while (true) {
 
+            //stop immediately if already fetched enough
+            if (!fetchAll && allSetlists.size() > maxSetlists)
+
             //logging to confirm pagination works
             System.out.println("Fetching page " + page + " of setlists for " + artistName);
 
@@ -241,17 +244,18 @@ public class SetlistService {
     //helper method to determine if we need to pause calls to avoid hitting API rate limit
     private boolean gottaThrottle (boolean fetchAll, int maxSetlists, int currentPage) {
         //want to throttle only when fetching a lot of data (fetchAll option or maxSetlists > 100
-        boolean isLargeFetch = fetchAll || maxSetlists > 100;
+        //boolean isLargeFetch = fetchAll || maxSetlists > 100;
         //always throttle every 2 pages after page 1 in heavy reqs
-        return isLargeFetch && currentPage > 1 && currentPage % 2 == 0;
+       // return isLargeFetch && currentPage > 1 && currentPage % 2 == 0;
+        return currentPage > 1;
     }
     //helper method to pause execution (sleep) to avoid rate limits (only should occur if fetching all time)
     private void throttleTime() {
         try {
             //logging to help understand when we are requesting too much for testing
-            System.out.println("Throttling to avoid API rate limit.... sleepy time for 2.5 seconds. ZZZZZZZZZZZ");
-            //sleep 2.5 second every 2 pages
-            Thread.sleep(2500);
+            System.out.println("Throttling to avoid 2/sec API rate limit.... sleepy time for 1.5 seconds. ZZZZZZZZZZZ");
+            //sleep 1.5 second every page
+            Thread.sleep(1500);
         }
         catch (InterruptedException e) {
             //safely restore interrupt status
