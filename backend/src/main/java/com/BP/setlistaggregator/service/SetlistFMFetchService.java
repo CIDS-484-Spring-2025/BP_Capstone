@@ -63,18 +63,21 @@ public class SetlistFMFetchService {
             System.out.println("Page " + page + " not found for artist " + artistName + ". Ending pagination.");
             return null;
         } catch (WebClientResponseException.TooManyRequests e) {
-            //log or backoff here
+            //429 rate limit hit- try sleeping, retry once
             System.out.println("Rate limit hit! Backing off 30 sec!!!!!");
             try {
                 //sleep 30 sec
                 Thread.sleep(30_000);
+                //retry once after sleep
+                return fetchSetlistPage(artistName, page, size);
             }
             catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
-            throw e;
-        } catch (Exception e) {
-            System.out.println("Failed to fetch page " + page + " for " + artistName + ": " + e.getMessage());
+            catch (Exception retryException) {
+                //even the retry failed- log and return null instead of breaking
+                System.out.println("Retry failed after rate limit: " + retryException.getMessage());
+            }
             return null;
         }
     }
