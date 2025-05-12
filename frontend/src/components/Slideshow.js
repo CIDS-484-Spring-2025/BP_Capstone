@@ -66,6 +66,7 @@ const images = [
          location: 'Unplugged',
          attribution: 'Photo by [julio zeppelin](https://www.flickr.com/photos/83706716@N02/7679510730) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
        },
+
 ];
 
 // Helper function to convert Markdown-style links in attribution to HTML
@@ -140,7 +141,10 @@ function Slideshow() {
             lineHeight: '1.3rem',
           }}
         >
-          <div>{current.artist} – {current.date} @ {current.location}</div>
+          <div>
+            {current.artist} – {current.date}
+            {current.location ? ` @ ${current.location}` : ''}
+          </div>
           {current.attribution && (
             <div
               style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}

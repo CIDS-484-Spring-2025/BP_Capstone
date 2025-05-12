@@ -29,6 +29,11 @@
   border-color: #6666ff;
 }
 
+.search-input:hover {
+  border-color: #999;
+}
+
+
 /*search button*/
 .search-button {
   margin-top: 1rem;
@@ -41,14 +46,6 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.range-select {
-  margin-top: 1rem;
-  padding: 8px 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
 .search-button:hover {
   background-color: #4d4ddb;
 }
@@ -76,6 +73,17 @@
   color: white;
   text-align: center;
   margin-top: 2rem;
+}
+.loading-message::after {
+  content: '...';
+  animation: dots 1s steps(3, end) infinite;
+}
+
+@keyframes dots {
+  0%   { content: ''; }
+  33%  { content: '.'; }
+  66%  { content: '..'; }
+  100% { content: '...'; }
 }
 
 

@@ -10,22 +10,26 @@ function SearchBar() {
   //store artist input from user
   const [artistName, setArtistName] = useState('');
   const debouncedArtist = useDebounce(artistName, 500);
+
   //store results from backend
   const [encores, setEncores] = useState([]);
   const [rarest, setRarest] = useState([]);
   const [averageLength, setAverageLength] = useState(null);
+  const [openers, setOpeners] = useState([]);
+
 
   //show loading while data being fetched
   const [loading, setLoading] = useState(false);
 
 //react hook that runs side effects like HTTP requests
 //block to address issue of frontend not updating searches when user changes input
-useEffect(() => {
+/*useEffect(() => {
   //dont fetch when artist input empty
   if (!debouncedArtist.trim()) return;
 
   //clear old results and show loading
   setEncores([]);
+  setOpeners([]);
   setRarest([]);
   setLoading(true);
   setAverageLength(null);
@@ -38,10 +42,16 @@ useEffect(() => {
     //when backend responds with json, store data in encore songs
     .then(response => response.json())
         .then(data => {
-          setEncores(data.encores);
-          setRarest(data.rarest);
-          setAverageLength(data.averageLength);
-          setLoading(false);
+           console.log("RAW stats response:", data);
+
+            setEncores(Array.isArray(data.encores) ? data.encores : []);
+            setOpeners(Array.isArray(data.openers) ? data.openers : []);
+            setRarest(Array.isArray(data.rarest) ? data.rarest : []);
+
+            const avg = parseFloat(data.averageLength);
+            setAverageLength(!isNaN(avg) ? avg : null);
+
+            setLoading(false);
         })
     //catch bad responses and log them
     .catch(error => {
@@ -49,26 +59,32 @@ useEffect(() => {
           setLoading(false);
         });
 }, [debouncedArtist, range]);
-
+*/
   //trigger on search click
   const handleSearch = async () => {
+    //skip empty input
+    if (!artistName.trim())
+        return;
+
     setLoading(true);
+    setEncores([]);
+    setOpeners([]);
+    setRarest([]);
+    setAverageLength(null);
     try {
-      //fetch top encore songs from backend
-      const encoreRes = await fetch(`http://localhost:8080/api/setlists/encores?artist=${debouncedArtist}&setlistRange=${range}`);
-      const encoreData = await encoreRes.json();
-      console.log("Encore response:", encoreData);
-      setEncores(encoreData);
+      //fetch all stats from consolidated backend endpoint
+      const res = await fetch(`http://localhost:8080/api/setlists/stats?artist=${artistName}&setlistRange=${range}`);
+      const data = await res.json();
 
-      //fetch rarest songs from backend
-      const rareRes = await fetch(`http://localhost:8080/api/setlists/rarest?artist=${debouncedArtist}&setlistRange=${range}`);
-      const rareData = await rareRes.json();
-      setRarest(rareData);
+      console.log("Stats API response:", data);
 
-      //fetch avg  setlist length
-      const avgLengthRes = await fetch(`http://localhost:8080/api/setlists/averageLength?artist=${debouncedArtist}&setlistRange=${range}`);
-      const avgLengthData = await avgLengthRes.json();
-      setAverageLength(avgLengthData);
+      //handle possible invalid values
+      setEncores(Array.isArray(data.encores) ? data.encores : []);
+      setOpeners(Array.isArray(data.openers) ? data.openers : []);
+      setRarest(Array.isArray(data.rarest) ? data.rarest : []);
+
+      const avg = parseFloat(data.averageLength);
+      setAverageLength(!isNaN(avg) ? avg : null);
 
     } catch (err) {
       console.error("Error fetching setlist data:", err);
@@ -113,11 +129,12 @@ console.log("Avg length:", averageLength);
     <div className="results-panel">
           {loading && <p className="loading-message">Loading stats...</p>}
 
-          {!loading && encores && rarest && averageLength !== null && (
+          {!loading && averageLength !== null && (
             <>
               <StatsPanel
                 averageLength={averageLength}
                 encores={encores}
+                openers={openers}
                 rarest={rarest}
                 artistName={artistName}
                 range={range}

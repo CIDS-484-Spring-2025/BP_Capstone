@@ -346,6 +346,10 @@ public class SetlistService {
         for (SongsRanked song : topEncores) {
             System.out.println(" - " + song.getTitle() + " (played " + song.getCount() + " times)");
         }
+        //log type and null check
+        System.out.println("EncoreSongs output: " + (topEncores != null ? topEncores.size() : "null"));
+        System.out.println("EncoreSongs class: " + (topEncores != null ? topEncores.getClass().getName() : "null"));
+
         return topEncores;
 
     }
@@ -364,6 +368,42 @@ public class SetlistService {
             }
         }
         return encore;
+    }
+
+    //method to calculate top openers- essentially inverse of getTopEncoreSongs
+    public List<SongsRanked> getTopOpenerSongs(String artist, int maxSetlists) {
+        //retrieve setlists from DB or API
+        List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
+
+        //map to hold song title -> opener count
+        Map<String, Integer> openerCounts = new HashMap<>();
+
+        //loop through each setlist
+        for (Setlist setlist : setlists) {
+            List<Song> songs = extractSongs(setlist);
+
+            //skip empty setlists
+            if (songs == null || songs.isEmpty()) {
+                continue;
+            }
+
+            //loop through all songs in the setlist
+            for (Song song : songs) {
+                //check if this is the first song
+                if (song.getPosition() == 1) {
+                    String title = song.getTitle();
+                    //skip blank/null titles
+                    if (title != null && !title.isBlank()) {
+                        int count = openerCounts.getOrDefault(title, 0);
+                        openerCounts.put(title, count + 1);
+                    }
+                    break; //stop after first song found
+                }
+            }
+        }
+
+        //return top 5 most common openers, sorted descending
+        return getTopRankedSongs(openerCounts, 5, false);
     }
 
     //method to return 5 rarest songs(least played) for selected artist

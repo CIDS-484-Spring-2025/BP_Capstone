@@ -37,36 +37,6 @@ public class SetlistController {
         //get all setlists from database using service layer method
         return setlistService.getAllArtistSetlists(artist, maxSetlists);
     }
-    //Get endpoint to return 5 most common encore songs for inputted artist
-    //maps to GET /api/setlists/encores?artist=Tool
-    @GetMapping("/encores")
-    public List<SongsRanked> getTopEncores(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
-    {
-        int maxSetlists = parseSetlistRange(setlistRange);
-
-        //call service method that finds encore of each concert, counts the most common and returns top 5 in JSON
-        return setlistService.getTopEncoreSongs(artist, maxSetlists);
-    }
-    //GET endpoint to return 5 rarest songs for selected artist
-    //maps to GET /api/setlists/rarest?artist=Nirvana
-    //responds to a call to http://localhost:8080/api/setlists/rarest
-    @GetMapping("/rarest")
-    public List<SongsRanked> getRarestSongs(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
-    {
-        int maxSetlists = parseSetlistRange(setlistRange);
-
-        return setlistService.getRarestSongs(artist, maxSetlists);
-
-    }
-    //GET endpoint to return average setlist length
-    //maps to GET /api/setlists/averageLength?artist=Radiohead
-    @GetMapping("/averageLength")
-    public double getAvgSetlistLength(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange) {
-        int maxSetlists = parseSetlistRange(setlistRange);
-
-        //call service method to calculate average number of songs per concert
-        return setlistService.getAvgSetlistLength(artist, maxSetlists);
-    }
     //new consolidated GET endpoint to return all processed setlist stats in one object
     //maps to: GET /api/setlists/stats?artist=Radiohead&setlistRange=50
     //have to return a map in order to return the stats together in one response
@@ -77,11 +47,24 @@ public class SetlistController {
     public Map<String, Object> getCombinedStats(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange) {
         int maxSetlists = parseSetlistRange(setlistRange);
 
-        //prepare stats in a key/value map
+        //get each stat into local variables using service methods
+        List<SongsRanked> encores = setlistService.getTopEncoreSongs(artist, maxSetlists);
+        List<SongsRanked> rarest = setlistService.getRarestSongs(artist, maxSetlists);
+        List<SongsRanked> openers = setlistService.getTopOpenerSongs(artist, maxSetlists);
+        double avgLength = setlistService.getAvgSetlistLength(artist, maxSetlists);
+
+        //log each result for debugging
+        System.out.println("encores class: " + (encores != null ? encores.getClass().getName() : "null"));
+        System.out.println("rarest class: " + (rarest != null ? rarest.getClass().getName() : "null"));
+        System.out.println("openers class: " + (openers != null ? openers.getClass().getName() : "null"));
+        System.out.println("averageLength: " + avgLength);
+
+        //build response map of stats
         Map<String, Object> stats = new HashMap<>();
-        stats.put("encores", setlistService.getTopEncoreSongs(artist, maxSetlists));
-        stats.put("rarest", setlistService.getRarestSongs(artist, maxSetlists));
-        stats.put("averageLength", setlistService.getAvgSetlistLength(artist, maxSetlists));
+        stats.put("encores", encores);
+        stats.put("rarest", rarest);
+        stats.put("averageLength", avgLength);
+        stats.put("openers", openers);
 
         return stats;
     }

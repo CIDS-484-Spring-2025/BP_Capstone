@@ -24,6 +24,8 @@ function Home() {
           justifyContent: 'center',
           //silver text
           color: '#C0C0C0',
+          //dark transparent background for white text
+          backgroundColor: 'rgba(0, 0, 0, 0.3)'
         }}
       >
         <h1
