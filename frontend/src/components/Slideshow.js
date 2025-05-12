@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-//hardcoded image data for now
+// hardcoded image data for slideshow
 const images = [
   {
     src: '/images/GYBE.jpg',
@@ -24,48 +24,124 @@ const images = [
     attribution: 'Photo by [M S](https://commons.wikimedia.org/wiki/File:FUGAZI_1_(19549805629).jpg) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
   },
   {
-      src: '/images/Swans.jpg',
-      artist: 'Swans',
-      date: '2010-12-10',
-      location: 'Warsaw, PL',
-      attribution: 'Photo by [Marcin Kutera](https://commons.wikimedia.org/wiki/File:Swans_warsaw_10_12_2010_poland_m_kutera.jpg) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
-    },
+    src: '/images/Swans.jpg',
+    artist: 'Swans',
+    date: '2010-12-10',
+    location: 'Warsaw, PL',
+    attribution: 'Photo by [Marcin Kutera](https://commons.wikimedia.org/wiki/File:Swans_warsaw_10_12_2010_poland_m_kutera.jpg) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
+  },
   {
-      src: '/images/RTJ.jpg',
-      artist: 'Run the Jewels with Zack De La Rocha',
-      date: '2015-04-11',
+    src: '/images/RTJ.jpg',
+    artist: 'Run the Jewels with Zack De La Rocha',
+    date: '2015-04-11',
+    location: null,
+    attribution: 'Photo by [Fred von Lohmann](https://commons.wikimedia.org/wiki/File:Run_the_Jewels.jpg) / [CC BY-SA 1.0](https://creativecommons.org/publicdomain/zero/1.0/deed.en)'
+  },
+  {
+    src: '/images/Beatles.jpg',
+    artist: 'The Beatles',
+    date: '1964-02',
+    location: 'The Ed Sullivan Show',
+    attribution: 'Photo by [Bernard Gotfryd](https://commons.wikimedia.org/wiki/File:The_Beatles_performing_at_The_Ed_Sullivan_Show.jpg) / [Library of Congress]'
+  },
+  {
+    src: '/images/NIN.jpg',
+    artist: 'Nine Inch Nails',
+    date: '2006-02-12',
+    location: 'Moline, IL',
+    attribution: 'Photo by [Brandon Dusseau](https://commons.wikimedia.org/wiki/File:Nine_Inch_Nails_Moline_10.jpg) / [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/)'
+  },
+  {
+    src: '/images/PJHarvey.jpg',
+    artist: 'PJ Harvey',
+    date: '2004-09-02',
+    location: null,
+    attribution: 'Photo by [Dave Mitchell (Plastic Jesus)](https://www.flickr.com/photos/davemitchell/108478954/) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
+  },
+  {
+    src: '/images/Nirvana.jpg',
+    artist: 'Nirvana',
+    date: '1994-11-01',
+    location: 'Unplugged',
+    attribution: 'Photo by [julio zeppelin](https://www.flickr.com/photos/83706716@N02/7679510730) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
+  },
+  {
+    src: '/images/Shellac.jpg',
+    artist: 'Shellac',
+    date: '2008-01-04',
+    location: 'Sao Paolo, BR',
+    attribution: 'Photo by [cássio abreu](https://www.flickr.com/photos/psicodrops/2381545747/) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
+  },
+  {
+    src: '/images/QOTSA.jpg',
+    artist: 'Queens of the Stone Age',
+    date: '2017-11-17',
+    location: 'Wembley Stadium',
+    attribution: 'Photo by [Raph_PH](https://www.flickr.com/photos/raph_ph/38546172716/) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
+  },
+  {
+      src: '/images/Bowie1.jpg',
+      artist: 'David Bowie',
+      date: '1974-02-15',
+      location: 'TopPop (Dutch TV Show)',
+      attribution: 'Photo by [Vértes György](https://commons.wikimedia.org/wiki/File:David_Bowie_RGB_13X18.jpg#/media/File:David_Bowie_RGB_13X18.jpg) / [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)'
+  },
+  {
+      src: '/images/Bowie2.jpeg',
+      artist: 'David Bowie',
+      date: '2003-11-23',
       location: null,
-      attribution: 'Photo by [Fred von Lohmann](https://commons.wikimedia.org/wiki/File:Run_the_Jewels.jpg) / [CC BY-SA 1.0](https://creativecommons.org/publicdomain/zero/1.0/deed.en)'
+      attribution: 'Photo by [Roger Woolman](https://commons.wikimedia.org/wiki/File:David_Bowie_(135687113).jpeg) / [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)'
+  },
+  {
+        src: '/images/JesusLizard.jpg',
+        artist: 'The Jesus Lizard',
+        date: '2009-09-14',
+        location: 'Paradiso, Amsterdam',
+        attribution: 'Photo by [Nick Helderman](https://www.flickr.com/photos/nickhelderman/3934176174/) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
     },
   {
-      src: '/images/Beatles.jpg',
-      artist: 'The Beatles',
-      date: '1964-02',
-      location: 'The Ed Sullivan Show',
-      attribution: 'Photo by [Bernard Gotfryd](https://commons.wikimedia.org/wiki/File:The_Beatles_performing_at_The_Ed_Sullivan_Show.jpg) / [Library of Congress]'
-    },
-  {
-        src: '/images/NIN.jpg',
-        artist: 'Nine Inch Nails',
-        date: '2006-02-12',
-        location: 'Moline, IL',
-        attribution: 'Photo by [Brandon Dusseau](https://commons.wikimedia.org/wiki/File:Nine_Inch_Nails_Moline_10.jpg) / [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/)'
-      },
-
-   {
-         src: '/images/PJHarvey.jpg',
-         artist: 'PJ Harvey',
-         date: '2004-09-02',
-         location: null,
-         attribution: 'Photo by [Dave Mitchell (Plastic Jesus](https://www.flickr.com/photos/davemitchell/108478954/) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
-       },
-   {
-         src: '/images/Nirvana.jpg',
-         artist: 'Nirvana',
-         date: '1994-11-01',
-         location: 'Unplugged',
-         attribution: 'Photo by [julio zeppelin](https://www.flickr.com/photos/83706716@N02/7679510730) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
-       },
+    src: '/images/TalkingHeads.jpg',
+    artist: 'Talking Heads',
+    date: '1982',
+    location: null,
+    attribution: 'Photo by [Craig Howell](https://www.flickr.com/photos/seat850/3451464308) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
+  },
+{
+  src: '/images/Godflesh.jpg',
+  artist: 'Godflesh',
+  date: '2018-04-20',
+  location: 'Roadburn Festival',
+  attribution: 'Photo by [Grywnn](https://commons.wikimedia.org/wiki/File:Godflesh_@_Roadburn_Festival_2018-04-20_004.jpg#/media/File:Godflesh_@_Roadburn_Festival_2018-04-20_004.jpg) / [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)'
+},
+{
+  src: '/images/TheClash.jpg',
+  artist: 'The Clash',
+  date: '1980-05-21',
+  location: 'Chateau Neuf, Oslo',
+  attribution: 'Photo by [Helge Øverås](https://commons.wikimedia.org/wiki/File:Clash_21051980_12_800.jpg#/media/File:Clash_21051980_12_800.jpg) / [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)'
+},
+{
+  src: '/images/Ween.jpg',
+  artist: 'Ween',
+  date: '2009-08-30',
+  location: 'Outside Lands Festival',
+  attribution: 'Photo by [David Oliver](https://commons.wikimedia.org/wiki/File:Dean_Ween_Outside_Lands.jpg#/media/File:Dean_Ween_Outside_Lands.jpg) / [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)'
+},
+{
+  src: '/images/TheCure.jpg',
+  artist: 'The Cure',
+  date: '2013-04-16',
+  location: null,
+  attribution: 'Photo by [Facundo Gaisler](https://www.flickr.com/photos/fotosgraficas/8654838339) / [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/)'
+},
+{
+  src: '/images/Swans1.jpg',
+  artist: 'Swans',
+  date: '2012-08-06',
+  location: 'OFF Festival',
+  attribution: 'Photo by [Nick Helderman](https://commons.wikimedia.org/wiki/File:OFF_Festival_2012_Swans.jpg#/media/File:OFF_Festival_2012_Swans.jpg) / [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/)'
+}
 
 ];
 
