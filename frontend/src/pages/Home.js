@@ -21,8 +21,10 @@ function Home() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'flex-start',
-          padding: '1rem',
+          justifyContent: 'center',
+          //make tight vertical spacing between title and search
+          gap: '0.25rem',
+          padding: '0.75rem 1rem',
           //silver text
           color: '#C0C0C0',
           //keep slideshow fully visible
@@ -34,13 +36,14 @@ function Home() {
       >
         <h1
           style={{
-            fontSize: '3rem',
-            marginBottom: '1.5rem',
+            fontSize: '2.8rem',
+            margin: 0,
+            paddingBottom: '0.25rem',
             textShadow: '2px 2px 8px black',
             fontWeight: 'bold',
             letterSpacing: '2px',
             backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            padding: '0.5rem 1rem',
+            padding: '0.25rem 0.5rem',
             borderRadius: '8px',
           }}
         >

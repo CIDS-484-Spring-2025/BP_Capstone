@@ -13,7 +13,7 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
         <div style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
           <h2
             style={{
-              fontSize: '1.6rem', // 🔻 was 3rem, now compact
+              fontSize: '3rem',
               textTransform: 'uppercase',
               letterSpacing: '1.5px',
               textDecoration: 'underline',
