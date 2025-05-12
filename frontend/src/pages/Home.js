@@ -15,28 +15,34 @@ function Home() {
           top: 0,
           left: 0,
           width: '100%',
-          height: '100%',
+          height: '100vh',
           //make sure its imposed over slideshow
           zIndex: 2,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
+          //make tight vertical spacing between title and search
+          gap: '0.25rem',
+          padding: '0.75rem 1rem',
           //silver text
           color: '#C0C0C0',
           //dark transparent background for white text
-          backgroundColor: 'rgba(0, 0, 0, 0.3)'
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          boxSizing: 'border-box',
         }}
       >
         <h1
           style={{
             fontSize: '3rem',
-            marginBottom: '1.5rem',
+            marginTop: '0rem',
+            marginBottom: '0.5rem',
+            paddingBottom: '0.25rem',
             textShadow: '2px 2px 8px black',
             fontWeight: 'bold',
             letterSpacing: '2px',
             backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            padding: '0.5rem 1rem',
+            padding: '0.25rem 0.5rem',
             borderRadius: '8px',
           }}
         >
