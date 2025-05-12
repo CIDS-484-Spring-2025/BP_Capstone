@@ -115,7 +115,7 @@ console.log("Avg length:", averageLength);
     >
       <div
         className="search-bar-container"
-        style={{ marginBottom: '0.25rem' }} // shrink gap below search bar
+        style={{ marginBottom: '0rem' }}
       >
         <input
           type="text"
@@ -149,7 +149,8 @@ console.log("Avg length:", averageLength);
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          marginTop: '0', // removes any gap before stats panel
+          // supposed to remove any gap before stats panel- why still gap
+          marginTop: '0',
         }}
       >
         {loading && <p className="loading-message">Loading stats...</p>}

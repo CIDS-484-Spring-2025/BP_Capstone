@@ -14,10 +14,14 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
           <h2
             style={{
               fontSize: '3rem',
+              //eliminate unwanted vertical gap
+              marginTop: '0',
+              //keep a little space from cards
+              marginBottom: '0.5rem',
               textTransform: 'uppercase',
               letterSpacing: '1.5px',
               textDecoration: 'underline',
-              margin: '0.5rem 0',
+              textShadow: '0 0 4px rgba(255, 255, 255, 0.2)'
             }}
           >
             <span
@@ -53,7 +57,7 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
 
         <div className="stat-card">
           <h3>Top Encore Songs</h3>
-          <ul>
+          <ol>
             {Array.isArray(encores) ? (
               encores.map((song, index) => (
                 <li key={index}>
@@ -63,12 +67,12 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
             ) : (
               <li>Encore Data unavailable</li>
             )}
-          </ul>
+          </ol>
         </div>
 
         <div className="stat-card">
           <h3>Top Opener Songs</h3>
-          <ul>
+          <ol>
             {Array.isArray(openers) ? (
               openers.map((song, index) => (
                 <li key={index}>
@@ -78,12 +82,12 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
             ) : (
               <li>Opener Data unavailable</li>
             )}
-          </ul>
+          </ol>
         </div>
 
         <div className="stat-card">
           <h3>Rarest Songs</h3>
-          <ul>
+          <ol>
             {Array.isArray(rarest) ? (
               rarest.map((song, index) => (
                 <li key={index}>
@@ -93,7 +97,7 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
             ) : (
               <li>Rarest Data unavailable</li>
             )}
-          </ul>
+          </ol>
         </div>
       </div>
     </div>

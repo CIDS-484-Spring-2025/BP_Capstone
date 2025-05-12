@@ -36,8 +36,9 @@ function Home() {
       >
         <h1
           style={{
-            fontSize: '2.8rem',
-            margin: 0,
+            fontSize: '3rem',
+            marginTop: '0rem',
+            marginBottom: '0.5rem',
             paddingBottom: '0.25rem',
             textShadow: '2px 2px 8px black',
             fontWeight: 'bold',
