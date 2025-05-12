@@ -61,4 +61,14 @@ public class Artist {
     public void setSetlists(List<Setlist> setlists) {
         this.setlists = setlists;
 }
+
+    //toString for debugging/logging
+    @Override
+    public String toString() {
+
+        return "Artist{id=" + id + ", name= '" + name + "'. mbid = '" + mbid + "'}";
+
+    }
+
+
 }

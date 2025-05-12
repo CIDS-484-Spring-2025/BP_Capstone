@@ -53,21 +53,18 @@ public class SetlistService {
     //main entry method for controller
     //first step upon user search- method to retrieve setlists from db, if not there from setlistFM fetcher
     public List<Setlist> getAllArtistSetlists(String artist, int maxSetlists) {
-        //query database to see if artist already there, sort by most recent
-        List<Setlist> existingSetlists = setlistRepository.findByArtistNameOrderByDateDesc(artist);
-
-        //determine if we need more data according to maxSetlists (if user requested all setlists or more than we have in db)
         boolean fetchAll = maxSetlists == -1;
-        boolean notEnoughSetlists = !fetchAll && existingSetlists.size() < maxSetlists;
+        //query database to see if artist already there, sort by most recent
+        List<Setlist> existingSetlists = getOrderedSetlistsfromDB(artist);
 
         //fetch from API if we have less data for artist than is requested
-        if (existingSetlists.isEmpty() || fetchAll || notEnoughSetlists) {
+        if (shouldFetchFromAPI(existingSetlists, maxSetlists)) {
             //log that we're fetching more data from the API for an artist that already existed in db
             System.out.println("Fetching more data from Setlist.fm API for: " + artist);
             fetchFromSetlistFm(artist, maxSetlists);
 
             //re-query db to get latest results
-            existingSetlists = setlistRepository.findByArtistNameOrderByDateDesc(artist);
+            existingSetlists = getOrderedSetlistsfromDB(artist);
         }
         //trim list if specific range requested (only do this if not -1 so not fetching aLL)
         if (!fetchAll && existingSetlists.size() > maxSetlists) {
@@ -76,126 +73,134 @@ public class SetlistService {
         //return db stats if it already satisfies request
         return existingSetlists;
     }
+    //helper method to determine if we should fetch from the API
+    private boolean shouldFetchFromAPI(List<Setlist> existingSetlists, int maxSetlists) {
+        //determine if we need more data according to maxSetlists (if user requested all setlists or more than we have in db)
+        //fetch more if we have no setlists, if the user chose fetch all, or if we have less than maxSetlists in db
+        return existingSetlists.isEmpty() || maxSetlists == -1 || existingSetlists.size() < maxSetlists;
+    }
+    //helper method for duplicate logic in getAllArtistSetlists
+    private List<Setlist> getOrderedSetlistsfromDB(String artist) {
+        return setlistRepository.findByArtistNameOrderByDateDesc(artist);
+    }
     //method to fetch artist setlists from setlistfm and download them
     //paginated to allow it to fetch 20 setlists fast, 100 normal or ALL setlists at a throttled rate
     //if maxSetlists = -1, fetch all pages, otherwise fetch up to maxSetlists value
     private List<Setlist> fetchFromSetlistFm(String artistName, int maxSetlists) {
-        int page = 1;
+
         //fetch all setlists if -1
         boolean fetchAll = maxSetlists == -1;
-
-        //list to hold all the setlists as we paginate
-        List<Setlist> allSetlists = new ArrayList<>();
-
         //check if artist exists in local DB already using helper method
         Artist artist = artistService.findOrCreateArtist(artistName);
 
+        //list to hold all the setlists as we paginate
+        List<Setlist> allFetched = new ArrayList<>();
+        int page = 1;
         //count streak of pages of full duplicates so we can stop repeating calls
         int duplicatePageStreak = 0;
         //need to break loop somehow if artist's setlists already in db
         //prevent issue of not retrieving all time stats for artist already searched for smaller range on- change max duplicates to 15 pages if fetching all time
         int maxDuplicatePages = fetchAll ? 15 : 4;
+
         //loop to retrieve setlists from a certain # of pages on setlistfm. loop stops once we reach maxSetlists and boolean stop = true
         while (true) {
-
-            //stop immediately if already fetched enough
-            if (!fetchAll && allSetlists.size() > maxSetlists)
-
-            //logging to confirm pagination works
-            System.out.println("Fetching page " + page + " of setlists for " + artistName);
-
-            //send GET request to Setlist.fm API at https://api.setlist.fm/rest/1.0/search/setlists?artistName= "user artist"
-            SetlistResponseWrapper response = setlistFetcher.fetchSetlistPage(artistName, page, PAGE_SIZE);
-
-            //return empty list if no data in response or if setlist array is null
-            if (response == null || response.getSetlist() == null || response.getSetlist().isEmpty())
-            {
-                System.out.println("issue- not backend, API returned no setlist data for page " + page + " — possible rate limit hit, artist typo, or no concerts found.");
+            if (shouldExitEarly(fetchAll, maxSetlists, allFetched.size(), page, duplicatePageStreak)) {
+                break;
+            }
+            //extract data from page
+            List<ApiSetlist> apiPageResults = fetchPageOrNull(artistName, page);
+            if (apiPageResults == null) {
                 break;
             }
 
-
-            //extract data from page
-            List<ApiSetlist> pageResults = response.getSetlist();
-            //log setlist structure from page
-            logSetlistStructure(pageResults);
-
-            System.out.println("API returned setlists: " + response.getSetlist().size());
-
-            //check if no usable setlists were found on this page
-            if (isAllDuplicates(pageResults, artist)) {
+            //check if page result is all duplicates
+            if (isAllDuplicates(apiPageResults, artist)) {
                 duplicatePageStreak++;
-
-                //log the empty/duplicate streak
-                //System.out.println("Page " + page + " had no new setlists (duplicate or empty). Streak: " + duplicatePageStreak);
-
-                //early exit if nothing has been saved and this page is also empty
                 if (duplicatePageStreak >= maxDuplicatePages) {
-                    //System.out.println("Too many duplicate pages in a row — stopping fetch.");
                     break;
                 }
-
                 page++;
+                //skip mapping if page is all dupes
                 continue;
             }
-            //reset duplicate streak because we saved valid setlists
-            duplicatePageStreak = 0;
 
-            //convert all API setlists (from current page) to DB setlists using mapper method and store valid setlists in db
-            List<Setlist> dbSetlists = mapAndFilterNewSetlists(pageResults, artist, maxSetlists, fetchAll, allSetlists.size());
-            if (dbSetlists.isEmpty()) {
+            //log setlist structure from page
+            logSetlistStructure(apiPageResults);
+
+            //call helper method to extract new setlists from fetched page
+            List<Setlist> newSetlists = processPage(apiPageResults, artist, maxSetlists, fetchAll, allFetched.size());
+
+            if (newSetlists.isEmpty()) {
                 //if we saved nothing, continue to next page unless it's too many in a row
                 duplicatePageStreak++;
                 if (duplicatePageStreak >= maxDuplicatePages) {
                     System.out.println("Too many duplicate pages in a row — stopping fetch.");
                     break;
                 } else {
-                    System.out.println("No new setlists on this page, continuing to next page.");
+                    //log the empty/duplicate streak
+                    System.out.println("No new setlists on this page, continuing to next page. Duplicate page streak: " + duplicatePageStreak);
                     page++;
                     continue;
                 }
             }
 
-            //persist just current page setlists
-            setlistRepository.saveAll(dbSetlists);
-
+            //reset duplicate streak if newSetlists not empty cuz we saved valid setlists
+            duplicatePageStreak = 0;
+            //persist setlists from current page to db
+            setlistRepository.saveAll(newSetlists);
+            //add new fetched setlists to full collection so we can track progress
+            allFetched.addAll(newSetlists);
             //move to next page if save succeeds
             page++;
 
-            //add them to full collection so we can track progress
-            allSetlists.addAll(dbSetlists);
-
-            //early exit if we've collected enough setlists for range
-            if (!fetchAll && allSetlists.size() >= maxSetlists) {
-                //System.out.println("Fetched enough setlists to satisfy maxSetlists = " + maxSetlists);
-                break;
-            }
-
-            //confirm songs are saved to the db
-            //System.out.println("saved " + dbSetlists.size() + " setlists and their songs to the database.");
-
-            //confirm setlists are being saved
-           // for (Setlist s : dbSetlists) {
-             //   System.out.println("Saved Setlist with " + s.getSongs().size() + " songs on " + s.getDate());
-           // }
             //check if we need to pause calls to avoid 429 errors
             if (gottaThrottle(fetchAll, maxSetlists, page)) {
                 throttleTime();
             }
         }
-        //trim size to be safe
-        if (!fetchAll && allSetlists.size() > maxSetlists) {
-            allSetlists = allSetlists.subList(0, maxSetlists);
-        }
 
         //logging after loop to ensure returning correct data
         System.out.println("Done fetching. Total pages visited: " + (page - 1));
-        System.out.println("total setlists fetched and saved: " + allSetlists.size());
+        System.out.println("total setlists fetched and saved: " + allFetched.size());
 
+        //trim size in case request less than requested range
         //return saved DB setlists
-            return allSetlists;
-        }
+        return limitResults(allFetched, fetchAll, maxSetlists);
+    }
+
         //fetchfromsetlistfm helper methods to modularize code
+    //helper method to streamline exit logic
+    private boolean shouldExitEarly(boolean fetchAll, int maxSetlists, int fetchedSoFar, int page, int dupStreak) {
+        //return true if we need to exit fetch loop
+        //stop immediately if already fetched enough to satisfy maxSetlists range
+        if (!fetchAll && fetchedSoFar >= maxSetlists) {
+            System.out.println("Fetched enough setlists to satisfy maxSetlists = " + maxSetlists);
+            return true;
+        }
+        //explicit page cap to prevent runaway loops on bad API data
+        //we should already break after 4 duplicate pages but this is safeguard
+        if (page > 50) {
+            System.out.println("Aborting fetch after 50 pages to prevent infinite loop.");
+            return true;
+        }
+        return false;
+    }
+    //helper method to fetch one page from setlist.fm api
+    private List<ApiSetlist> fetchPageOrNull(String artistName, int page) {
+        //logging to confirm pagination works
+        System.out.println("Fetching page " + page + " of setlists for " + artistName);
+        //send GET request to Setlist.fm API at https://api.setlist.fm/rest/1.0/search/setlists?artistName= "user artist"
+        //call fetch service method to fetch one page from response and wrap in dto object
+        SetlistResponseWrapper response = setlistFetcher.fetchSetlistPage(artistName, page, PAGE_SIZE);
+        //return empty list if no data in response or if setlist array is null
+        if (response == null || response.getSetlist() == null || response.getSetlist().isEmpty())  {
+            System.out.println("issue- not backend, API returned no setlist data for page " + page + " — possible rate limit hit, artist typo, or no concerts found.");
+            return null;
+        }
+        System.out.println("API returned setlists: " + response.getSetlist().size());
+        return response.getSetlist();
+    }
+
     //helper method to check if all setlists in API response already exist in local DB
     private boolean isAllDuplicates(List<ApiSetlist> apiSetlists, Artist artist) {
         int duplicatesOnPageCtr = 0;
@@ -209,8 +214,10 @@ public class SetlistService {
             //return true only if every setlist on page is duplicate
             return duplicatesOnPageCtr == apiSetlists.size();
     }
-    //helper method to convert API setlists (from current page) into DB entities and filter out duplicates
-    private List<Setlist> mapAndFilterNewSetlists(List<ApiSetlist> apiSetlists, Artist artist, int maxSetlists, boolean fetchAll, int ctr) {
+
+    //helper method to convert API setlists (from current page) into DB entities and skip dupes/invalid entries
+    //stops early if maxSetlists reached
+    private List<Setlist> processPage(List<ApiSetlist> apiSetlists, Artist artist, int maxSetlists, boolean fetchAll, int alreadyFetchedCtr) {
         List<Setlist> results = new ArrayList<>();
 
         //loop thru all setlists returned by API
@@ -231,7 +238,7 @@ public class SetlistService {
                 results.add(dbSetlist);
 
                 //if we hit desired count of setlists from search, stop loop early
-                if (!fetchAll && (ctr + results.size() >= maxSetlists)) {
+                if (!fetchAll && (alreadyFetchedCtr + results.size() >= maxSetlists)) {
                     break;
                 }
             } catch (Exception e) {
@@ -262,6 +269,14 @@ public class SetlistService {
             Thread.currentThread().interrupt();
         }
     }
+    //helper to trim results
+    private List<Setlist> limitResults(List<Setlist> allSetlists, boolean fetchAll, int maxSetlists) {
+        if (!fetchAll && allSetlists.size() > maxSetlists) {
+            return allSetlists.subList(0, maxSetlists);
+        }
+        return allSetlists;
+    }
+
     //print raw json from API for debugging empty setlist issue
     //debug logger method to print each setlist's structure
     private void logSetlistStructure(List<ApiSetlist> apiSetlists) {
@@ -299,19 +314,8 @@ public class SetlistService {
             if (songs == null || songs.isEmpty()) {
                 continue;
             }
-            //find song with highest position in setlist (will be last song/encore)
-            //keep track of highest position
-            Song encore = null;
-
-            //loop through all songs to find one with highest position
-            for (Song song : songs) {
-                if (song.getPosition() == 0) {
-                    continue;
-                }
-                if (encore == null || song.getPosition() > encore.getPosition()) {
-                    encore = song;
-                }
-            }
+            //call helper method to find song at encore position
+            Song encore = findEncore(songs);
             //count encore song if found
             if (encore != null) {
                 String title = encore.getTitle();
@@ -344,6 +348,22 @@ public class SetlistService {
         }
         return topEncores;
 
+    }
+    //helper method for encores containing logic to find highest position song
+    //find song with highest position in setlist (will be last song/encore)
+    private Song findEncore(List<Song> songs) {
+        //keep track of highest position
+        Song encore = null;
+        int maxPosition = -1;
+
+        //loop through all songs to find one with highest position
+        for (Song song : songs) {
+            if (song.getPosition() > maxPosition) {
+                encore = song;
+                maxPosition = song.getPosition();
+            }
+        }
+        return encore;
     }
 
     //method to return 5 rarest songs(least played) for selected artist
@@ -397,6 +417,7 @@ public class SetlistService {
         }
         return rarest;
     }
+
     //method to calculate thr average # of songs per setlist in given range
     public double getAvgSetlistLength (String artist, int maxSetlists) {
 
@@ -495,14 +516,18 @@ public class SetlistService {
         try {
             LocalDate date = LocalDate.parse(apiSetlist.getEventDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
             return setlistRepository.existsByArtistAndDate(artist, date);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Date parse error for duplicate check: " + apiSetlist.getEventDate());
             // treat unparseable entries as duplicates to be safe
             return true;
-        }
-        }
+                }
+         }
     }
+
+
+
+
+
 
 
 

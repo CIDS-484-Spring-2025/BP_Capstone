@@ -33,6 +33,7 @@ public class Setlist {
 
     }
     //paramaterized constructor
+    //helps with manual setlist construction in SetlistFMFetchService
     public Setlist(LocalDate date, String venue, String city, String country, Artist artist) {
         this.date = date;
         this.venue = venue;
@@ -40,6 +41,7 @@ public class Setlist {
         this.country = country;
         this.artist = artist;
     }
+
     //getters and setters, allow service layer and controller to modify setlist objects
 
     public LocalDate getDate() {
@@ -96,5 +98,15 @@ public class Setlist {
 
     public void setSongs(List<Song> songs) {
         this.songs = songs;
+    }
+
+    //for logging
+    @Override
+    public String toString() {
+        return "Setlist{" +
+                "date=" + date +
+                ", venue='" + venue + '\'' +
+                ", artist=" + (artist != null ? artist.getName() : "null") +
+                '}';
     }
 }
