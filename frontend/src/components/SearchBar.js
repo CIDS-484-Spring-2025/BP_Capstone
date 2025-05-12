@@ -119,6 +119,8 @@ console.log("Avg length:", averageLength);
                 averageLength={averageLength}
                 encores={encores}
                 rarest={rarest}
+                artistName={artistName}
+                range={range}
               />
               <SetlistFMCredit />
             </>

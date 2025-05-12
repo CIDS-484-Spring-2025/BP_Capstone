@@ -1,3 +1,5 @@
+
+
 .App {
   text-align: center;
 }
@@ -36,3 +38,12 @@
     transform: rotate(360deg);
   }
 }
+
+@keyframes flicker-soft {
+  0%   { filter: brightness(0.9); }
+  50%  { filter: brightness(1.1); }
+  100% { filter: brightness(0.9); }
+}
+
+
+

@@ -24,6 +24,7 @@ public class Song {
     public Song() {
 
     }
+    //building song entity used in mapApiSetlistToEntity method in fetch service
     public Song(String title, int position, Setlist setlist) {
         this.title = title;
         this.position = position;
@@ -60,5 +61,15 @@ public class Song {
 
     public void setSetlist(Setlist setlist) {
         this.setlist = setlist;
+    }
+
+    @Override
+    public String toString() {
+        return "Song{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", position=" + position +
+                ", setlistDate=" + (setlist != null ? setlist.getDate() : "null") +
+                '}';
     }
 }
