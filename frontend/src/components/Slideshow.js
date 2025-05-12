@@ -84,8 +84,8 @@ const images = [
   {
       src: '/images/Bowie1.jpg',
       artist: 'David Bowie',
-      date: '1974-02-15',
-      location: 'TopPop (Dutch TV Show)',
+      date:null,
+      location: null,
       attribution: 'Photo by [Vértes György](https://commons.wikimedia.org/wiki/File:David_Bowie_RGB_13X18.jpg#/media/File:David_Bowie_RGB_13X18.jpg) / [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)'
   },
   {
