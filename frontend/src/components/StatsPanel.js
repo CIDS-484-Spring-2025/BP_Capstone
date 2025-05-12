@@ -8,36 +8,37 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
   const rangeText = range === "-1" ? "entire setlist history" : `last ${range} shows`;
 
   return (
-    <div>
-      {/* dynamic title shown if artistName exists */}
+    <div style={{ width: '100%' }}>
       {artistName && (
-        <h2
-          style={{
-            fontSize: '3rem',
-            textAlign: 'center',
-            textTransform: 'uppercase',
-            letterSpacing: '2px',
-            textDecoration: 'underline',
-            marginBottom: '2rem',
-          }}
-        >
-          <span
-            className="flame-text"
+        <div style={{ textAlign: 'center', marginBottom: '0.25rem' }}>
+          <h2
             style={{
-              fontFamily: "'Bangers', cursive",
-              backgroundImage: 'url("/Flames.gif")',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-              backgroundSize: 'cover',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              animation: 'flicker-soft 1.2s infinite',
+              fontSize: '1.6rem', // 🔻 was 3rem, now compact
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px',
+              textDecoration: 'underline',
+              margin: '0.5rem 0',
             }}
           >
+            <span
+              className="flame-text"
+              style={{
+                fontFamily: "'Bangers', cursive",
+                backgroundImage: 'url("/Flames.gif")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                backgroundSize: 'cover',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                animation: 'flicker-soft 1.2s infinite',
+              }}
+            >
+
             Stats for {artistName}'s {rangeText}
           </span>{' '}
           👀
         </h2>
+        </div>
       )}
 
       <div className="stats-grid">

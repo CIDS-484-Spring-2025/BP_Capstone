@@ -100,8 +100,21 @@ console.log("Rarest songs:", rarest);
 console.log("Avg length:", averageLength);
 
   return (
-  <>
-    <div className="search-bar-container">
+  <div
+  style={{
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+    //prevent scroll bars or overflow
+    overflow: 'hidden',
+    boxSizing: 'border-box',
+    padding: '0.5rem'
+  }}
+  >
+    <div className="search-bar-container" style={{ marginBottom: '0.5rem' }}>
       <input
         type="text"
         placeholder="Enter Artist Name for Setlist Insights"
@@ -126,7 +139,16 @@ console.log("Avg length:", averageLength);
       </button>
     </div>
 
-    <div className="results-panel">
+    <div className="results-panel"
+    style={{
+        flexGrow: 1,
+        //if needed, allow scrolling in just this box
+        overflow: 'auto',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        }}>
           {loading && <p className="loading-message">Loading stats...</p>}
 
           {!loading && averageLength !== null && (
@@ -143,7 +165,7 @@ console.log("Avg length:", averageLength);
             </>
           )}
         </div>
-        </>
+      </div>
   );
 }
 

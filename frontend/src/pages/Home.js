@@ -15,17 +15,21 @@ function Home() {
           top: 0,
           left: 0,
           width: '100%',
-          height: '100%',
+          height: '100vh',
           //make sure its imposed over slideshow
           zIndex: 2,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
+          padding: '1rem',
           //silver text
           color: '#C0C0C0',
+          //keep slideshow fully visible
+          overflow: 'hidden',
           //dark transparent background for white text
-          backgroundColor: 'rgba(0, 0, 0, 0.3)'
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          boxSizing: 'border-box',
         }}
       >
         <h1

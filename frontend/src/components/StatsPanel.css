@@ -1,12 +1,16 @@
 .stats-grid {
+  max-height: 100%;
+  overflow: auto;
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
   margin-top: 2rem;
-  padding: 2rem;
+  padding: 0 1rem;
   max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
+  box-sizing: border-box;
 }
 
 .stat-card {
