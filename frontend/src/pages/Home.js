@@ -27,8 +27,6 @@ function Home() {
           padding: '0.75rem 1rem',
           //silver text
           color: '#C0C0C0',
-          //keep slideshow fully visible
-          overflow: 'hidden',
           //dark transparent background for white text
           backgroundColor: 'rgba(0, 0, 0, 0.3)',
           boxSizing: 'border-box',

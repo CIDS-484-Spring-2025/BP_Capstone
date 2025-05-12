@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import './Slideshow.css';
+
 
 // hardcoded image data for slideshow
 const images = [
@@ -169,7 +171,7 @@ function Slideshow() {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((i) => (i + 1) % shuffledImages.length);
-    }, 4000); // Change every 4 seconds
+    }, 4300); // Change every 4 seconds
     return () => clearInterval(interval);
   }, [shuffledImages]);
 
@@ -198,32 +200,19 @@ function Slideshow() {
             objectFit: 'cover',
             //keep crop centered on object
             objectPosition: 'center',
+            opacity: 1,
             transition: 'opacity 1s ease-in-out',
           }}
         />
 
         {/*caption overlay in bottom right*/}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '1rem',
-            right: '1rem',
-            background: 'rgba(0, 0, 0, 0.5)',
-            color: 'white',
-            padding: '0.75rem 1rem',
-            borderRadius: '0.5rem',
-            fontSize: '0.9rem',
-            maxWidth: '80%',
-            lineHeight: '1.3rem',
-          }}
-        >
+        <div className = "slideshow-caption">
           <div>
             {current.artist} – {current.date}
             {current.location ? ` @ ${current.location}` : ''}
           </div>
           {current.attribution && (
-            <div
-              style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}
+            <small
               dangerouslySetInnerHTML={{ __html: formatAttribution(current.attribution) }}
             />
           )}

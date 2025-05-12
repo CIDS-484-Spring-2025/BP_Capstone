@@ -5,7 +5,7 @@ import '../App.css';
 //include artistName and range as props
 function StatsPanel({ averageLength, encores, rarest, openers, artistName, range }) {
   //determine readable range
-  const rangeText = range === "-1" ? "entire setlist history" : `last ${range} shows`;
+  const rangeText = range === "all" ? "entire setlist history" : `last ${range} shows`;
 
   return (
     <div style={{ width: '100%' }}>
@@ -20,10 +20,13 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
               marginBottom: '0.5rem',
               textTransform: 'uppercase',
               letterSpacing: '1.5px',
-              textDecoration: 'underline',
-              textShadow: '0 0 4px rgba(255, 255, 255, 0.2)'
+              //slight soft glow
+              textShadow: '0 0 12px rgba(255, 80, 0, 0.55), 0 0 20px rgba(255, 140, 0, 0.2)',
+              //allow absolutely positioned bar
+              position: 'relative',
             }}
           >
+          💯
             <span
               className="flame-text"
               style={{
@@ -34,7 +37,7 @@ function StatsPanel({ averageLength, encores, rarest, openers, artistName, range
                 backgroundSize: 'cover',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                animation: 'flicker-soft 1.2s infinite',
+                animation: 'flicker-soft 2s infinite',
               }}
             >
 

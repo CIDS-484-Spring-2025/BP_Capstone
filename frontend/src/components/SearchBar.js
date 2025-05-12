@@ -149,10 +149,17 @@ console.log("Avg length:", averageLength);
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          // supposed to remove any gap before stats panel- why still gap
-          marginTop: '0',
+          // supposed to remove any gap before stats panel—why still gap
+          marginTop: '3rem',
+          padding: '2rem',
+          paddingBottom: '6rem', // ✅ added space to avoid overlap with caption
+          maxWidth: '1200px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          boxSizing: 'border-box',
         }}
       >
+
         {loading && <p className="loading-message">Loading stats...</p>}
 
         {!loading && averageLength !== null && (
