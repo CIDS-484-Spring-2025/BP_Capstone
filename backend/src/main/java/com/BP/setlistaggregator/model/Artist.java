@@ -18,6 +18,8 @@ public class Artist {
     private String name;
     //musicbrainz id needed for matching with setlist.fm api
     private String mbid;
+    //whether we've already fetched all available setlists from the API for this artist
+    private boolean fullyFetched = false;
 
     //one artist can have many setlists
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
@@ -68,6 +70,13 @@ public class Artist {
 
         return "Artist{id=" + id + ", name= '" + name + "'. mbid = '" + mbid + "'}";
 
+    }
+    public boolean isFullyFetched() {
+        return fullyFetched;
+    }
+
+    public void setFullyFetched(boolean fullyFetched) {
+        this.fullyFetched = fullyFetched;
     }
 
 

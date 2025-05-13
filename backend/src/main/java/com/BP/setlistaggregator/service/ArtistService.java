@@ -48,6 +48,11 @@ public class ArtistService {
         //delegate to repository to fetch all rows from artist table
         return artistRepository.findAll();
     }
+    // new method to persist artist updates like setting fullyFetched=true
+    public Artist save(Artist artist) {
+        return artistRepository.save(artist);
+    }
+
 
     //implement in future: get artist stats, artist suggestions, etc.
 }
