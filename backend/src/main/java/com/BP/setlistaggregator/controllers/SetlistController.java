@@ -30,12 +30,12 @@ public class SetlistController {
     //maps to GET /api/setlists?artist=Radiohead
     //returns list of setlists, each containing songs, artist etc in JSON format
     @GetMapping
-    public List<Setlist> getAllArtistSetlists(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
+    public List<Setlist> getArtistSetlists(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
     {
         //have to use String in parameter to allow for user to select all, so conversion is in case number entered
         int maxSetlists = parseSetlistRange(setlistRange);
         //get all setlists from database using service layer method
-        return setlistService.getAllArtistSetlists(artist, maxSetlists);
+        return setlistService.getArtistSetlists(artist, maxSetlists);
     }
     //new consolidated GET endpoint to return all processed setlist stats in one object
     //maps to: GET /api/setlists/stats?artist=Radiohead&setlistRange=50
