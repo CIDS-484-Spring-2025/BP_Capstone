@@ -53,15 +53,21 @@ public class SetlistService {
     //main entry method for controller
     //first step upon user search- method to retrieve setlists from db, if not there from setlistFM fetcher
     public List<Setlist> getAllArtistSetlists(String artist, int maxSetlists) {
-        boolean fetchAll = maxSetlists == -1;
+
+        //turn artist name into Artist object thats db entity (keeping track of if we have all their setlists)
+        Artist artistObj = artistService.findOrCreateArtist(artist);
+
         //query database to see if artist already there, sort by most recent
-        List<Setlist> existingSetlists = getOrderedSetlistsfromDB(artist);
+        List<Setlist> existingSetlists = getOrderedSetlistsfromDB(artistObj.getName());
+
+        //true if user searching for all setlists
+        boolean fetchAll = maxSetlists == -1;
 
         //fetch from API if we have less data for artist than is requested
-        if (shouldFetchFromAPI(existingSetlists, maxSetlists)) {
+        if (shouldFetchFromAPI(existingSetlists, maxSetlists, artistObj)) {
             //log that we're fetching more data from the API for an artist that already existed in db
             System.out.println("Fetching more data from Setlist.fm API for: " + artist);
-            fetchFromSetlistFm(artist, maxSetlists);
+            fetchFromSetlistFm(artistObj.getName(), maxSetlists);
 
             //re-query db to get latest results
             existingSetlists = getOrderedSetlistsfromDB(artist);
@@ -74,10 +80,17 @@ public class SetlistService {
         return existingSetlists;
     }
     //helper method to determine if we should fetch from the API
-    private boolean shouldFetchFromAPI(List<Setlist> existingSetlists, int maxSetlists) {
+    private boolean shouldFetchFromAPI(List<Setlist> existingSetlists, int maxSetlists, Artist artist) {
         //determine if we need more data according to maxSetlists (if user requested all setlists or more than we have in db)
         //fetch more if we have no setlists, if the user chose fetch all, or if we have less than maxSetlists in db
-        return existingSetlists.isEmpty() || maxSetlists == -1 || existingSetlists.size() < maxSetlists;
+        if (existingSetlists.isEmpty()) {
+            return true;
+        }
+        // fetch only if we haven’t fetched all yet
+        if (maxSetlists == -1) {
+            return !artist.isFullyFetched();
+        }
+        return existingSetlists.size() < maxSetlists;
     }
     //helper method for duplicate logic in getAllArtistSetlists
     private List<Setlist> getOrderedSetlistsfromDB(String artist) {
@@ -134,6 +147,9 @@ public class SetlistService {
                 //if we saved nothing, continue to next page unless it's too many in a row
                 duplicatePageStreak++;
                 if (duplicatePageStreak >= maxDuplicatePages) {
+                    //we've fetched all setlists for artist already
+                    artist.setFullyFetched(true);
+                    artistService.save(artist);
                     System.out.println("Too many duplicate pages in a row — stopping fetch.");
                     break;
                 } else {
