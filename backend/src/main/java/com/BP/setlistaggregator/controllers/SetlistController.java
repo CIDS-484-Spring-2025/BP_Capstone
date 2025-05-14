@@ -11,7 +11,7 @@ import com.BP.setlistaggregator.internalDTO.SongsRanked;
 
 //class to handle requests involving setlist data, stats
 //allow React frontend on port 3000 to make requests to Spring Boot backend on 8080
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://setlist-aggregator-frontend.vercel.app")
 //annotation to tell Spring this is a REST API controller that returns JSON
 @RestController
 //base URL for endpoints in class
@@ -26,16 +26,16 @@ public class SetlistController {
         this.setlistService = setlistService;
     }
 
-    //GET endpoint to fetch all setlists from user defined artist
+    //GET endpoint to fetch setlists from user defined artist
     //maps to GET /api/setlists?artist=Radiohead
     //returns list of setlists, each containing songs, artist etc in JSON format
     @GetMapping
-    public List<Setlist> getAllArtistSetlists(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
+    public List<Setlist> getArtistSetlists(@RequestParam String artist, @RequestParam(defaultValue = "50") String setlistRange)
     {
         //have to use String in parameter to allow for user to select all, so conversion is in case number entered
         int maxSetlists = parseSetlistRange(setlistRange);
         //get all setlists from database using service layer method
-        return setlistService.getAllArtistSetlists(artist, maxSetlists);
+        return setlistService.getArtistSetlists(artist, maxSetlists);
     }
     //new consolidated GET endpoint to return all processed setlist stats in one object
     //maps to: GET /api/setlists/stats?artist=Radiohead&setlistRange=50

@@ -52,7 +52,7 @@ public class SetlistService {
     }
     //main entry method for controller
     //first step upon user search- method to retrieve setlists from db, if not there from setlistFM fetcher
-    public List<Setlist> getAllArtistSetlists(String artist, int maxSetlists) {
+    public List<Setlist> getArtistSetlists(String artist, int maxSetlists) {
 
         //turn artist name into Artist object thats db entity (keeping track of if we have all their setlists)
         Artist artistObj = artistService.findOrCreateArtist(artist);
@@ -92,11 +92,11 @@ public class SetlistService {
         }
         return existingSetlists.size() < maxSetlists;
     }
-    //helper method for duplicate logic in getAllArtistSetlists
+    //helper method for duplicate logic in getArtistSetlists
     private List<Setlist> getOrderedSetlistsfromDB(String artist) {
         return setlistRepository.findByArtistNameOrderByDateDesc(artist);
     }
-    //method to fetch artist setlists from setlistfm and download them
+    //method to fetch artist setlists from setlistfm
     //paginated to allow it to fetch 20 setlists fast, 100 normal or ALL setlists at a throttled rate
     //if maxSetlists = -1, fetch all pages, otherwise fetch up to maxSetlists value
     private List<Setlist> fetchFromSetlistFm(String artistName, int maxSetlists) {
@@ -316,7 +316,7 @@ public class SetlistService {
     public List<SongsRanked> getTopEncoreSongs(String artist, int maxSetlists) {
 
         //look up the setlists of user entered artist by calling method (from DB or API)
-        List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
+        List<Setlist> setlists = getArtistSetlists(artist, maxSetlists);
 
         //map to track amount of times each encore song appears
         Map<String, Integer> encoreCounts = new HashMap<>();
@@ -389,7 +389,7 @@ public class SetlistService {
     //method to calculate top openers- essentially inverse of getTopEncoreSongs
     public List<SongsRanked> getTopOpenerSongs(String artist, int maxSetlists) {
         //retrieve setlists from DB or API
-        List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
+        List<Setlist> setlists = getArtistSetlists(artist, maxSetlists);
 
         //map to hold song title -> opener count
         Map<String, Integer> openerCounts = new HashMap<>();
@@ -425,7 +425,7 @@ public class SetlistService {
     //method to return 5 rarest songs(least played) for selected artist
     public List<SongsRanked> getRarestSongs(String artist, int maxSetlists) {
         //retrieve setlists for artist
-        List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
+        List<Setlist> setlists = getArtistSetlists(artist, maxSetlists);
 
         //map to count appearances of each song
         Map<String, Integer> songCounts = new HashMap<>();
@@ -478,7 +478,7 @@ public class SetlistService {
     public double getAvgSetlistLength (String artist, int maxSetlists) {
 
         //get all setlists from db or fetcher
-        List<Setlist> setlists = getAllArtistSetlists(artist, maxSetlists);
+        List<Setlist> setlists = getArtistSetlists(artist, maxSetlists);
 
         //track total song count
         int totalSongs = 0;

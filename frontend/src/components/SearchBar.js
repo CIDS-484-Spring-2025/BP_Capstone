@@ -72,7 +72,7 @@ function SearchBar() {
     setAverageLength(null);
     try {
       //fetch all stats from consolidated backend endpoint
-      const res = await fetch(`http://localhost:8080/api/setlists/stats?artist=${artistName}&setlistRange=${range}`);
+      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/setlists/stats?artist=${artistName}&setlistRange=${range}`);
       const data = await res.json();
 
       console.log("Stats API response:", data);

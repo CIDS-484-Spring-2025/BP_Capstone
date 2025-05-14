@@ -1,5 +1,7 @@
 # Artist Setlist Aggregator
 
+# Deployed Site Link: https://setlist-aggregator-frontend.vercel.app/
+
 ## Project Overview:
 
 The idea of the **Artist Setlist Aggregator** is to serve as a web application that allows users to search for their favorite musicians and view their **average setlist and other insightful statistics** generated from a given range of recent concerts by working with data from the Setlist.fm API.
