@@ -4,10 +4,10 @@
 
 ## Project Overview:
 
-The idea of the **Artist Setlist Aggregator** is to serve as a web application that allows users to search for their favorite musicians and view their **average setlist and other insightful statistics** generated from a given range of recent concerts by working with data from the Setlist.fm API.
+The idea of the **Artist Setlist Aggregator** is to serve as a web application that allows users to search for their favorite musicians and view **insightful and varied setlist statistics** generated from a given range of recent concerts by working with data from the Setlist.fm API.
 
 
-This project will venture into the world of full-stack development by integrating a **React frontend**, a **Spring Boot backend**, and a **PostgreSQL database**. It will involve use of multiple programming languages including Java, JavaScript, HTML, CSS and SQL. There will also be a Backend API integration using HTTP methods and JSON parsing to retrieve and process data. Implementation of efficient data flow will be achieved by building a structured data pipeline to process and store statistics.
+This project ventures into the world of full-stack development by integrating a **React frontend**, a **Spring Boot backend**, and a **PostgreSQL database**. It involves use of multiple programming languages including Java, JavaScript, HTML, CSS and SQL. There is also a Backend API integration which uses HTTP methods and JSON parsing to retrieve and process data. Implementation of efficient data flow is a continued goal being achieved by building and improving on a structured data pipeline with effecting throttling measures and logging that works to process and store statistics.
 
 ## Technologies Used:
 ### Front End-
@@ -34,6 +34,7 @@ This project will venture into the world of full-stack development by integratin
 * Fetch and process setlist data from the Setlist.fm API into insightful statistics.
 * Display setlist statistics (rare songs, variations, guest performers,frequent encores etc).
 * Allow users to save searches in a PostgreSQL database.
+
 ## Current Progress:
 * Set up technology stack on multiple devices for efficient development
 * Deployed and tested React frontend and Spring Boot backend
@@ -53,8 +54,10 @@ This project will venture into the world of full-stack development by integratin
 * Simplified service-layer logic in SetlistService by replacing redundant sorting logic with clear selection sort 
 * Moved duplicate logic to helper method in controllers
 * Improved backend logging for debugging setlist mapping and song saving
+
 ## Future Timeline:
 ### -Final Goals
+
 * Improve UI, add features to allow users to sign up for account to save their stats from searches
 * Implement more functions to process data from API into additional statistics.
 * With back end logic mostly solidified, focus is on front-end user experience and features.
