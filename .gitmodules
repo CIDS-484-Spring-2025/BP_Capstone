@@ -1,3 +1,6 @@
 [submodule "backend"]
 	path = backend
 	url = git@github.com:bprestholdt/setlist_aggregator-backend.git
+[submodule "frontend"]
+	path = frontend
+	url = git@github.com:bprestholdt/setlist_aggregator-frontend.git
