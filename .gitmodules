@@ -1,0 +1,3 @@
+[submodule "backend"]
+	path = backend
+	url = git@github.com:bprestholdt/setlist_aggregator-backend.git
