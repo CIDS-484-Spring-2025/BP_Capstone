@@ -4,11 +4,17 @@ import StatsPanel from './StatsPanel';
 import './SearchBar.css';
 import SetlistFMCredit from './SetlistFMCredit';
 
+
+
 function SearchBar() {
   //holds which dropdown range value is selected
   const [range, setRange] = useState("20");
   //store artist input from user
   const [artistName, setArtistName] = useState('');
+  const [submittedArtist, setSubmittedArtist] = useState('');
+
+  //track when user searched to force statspanel to re-render even for same artist
+
   const debouncedArtist = useDebounce(artistName, 500);
 
   //store results from backend
@@ -65,6 +71,9 @@ function SearchBar() {
     if (!artistName.trim())
         return;
 
+        //fix issue of statpanel title dynamically rendering
+    setSubmittedArtist(artistName);
+
     setLoading(true);
     setEncores([]);
     setOpeners([]);
@@ -105,11 +114,16 @@ console.log("Avg length:", averageLength);
         flexDirection: 'column',
         justifyContent: 'center', // restored original centered layout
         alignItems: 'center',
-        height: '100%',
+        //subtract caption div height to fix captions not clickable
+        maxHeight: 'calc(100vh - 80px)',
         width: '100%',
-        overflow: 'hidden',
+        position: 'relative',
+        zIndex: '10',
+        overflowY: 'auto',
         boxSizing: 'border-box',
         padding: '0.5rem',
+        //ensures nothing sits over the caption
+        paddingBottom: '90px',
         // removed gap to eliminate extra space between search and stats
       }}
     >
@@ -155,14 +169,14 @@ console.log("Avg length:", averageLength);
       >
         {loading && <p className="loading-message">Loading stats...</p>}
 
-        {!loading && averageLength !== null && (
+        {!loading && submittedArtist && (
           <>
             <StatsPanel
               averageLength={averageLength}
               encores={encores}
               openers={openers}
               rarest={rarest}
-              artistName={artistName}
+              artistName={submittedArtist}
               range={range}
             />
             <SetlistFMCredit />
